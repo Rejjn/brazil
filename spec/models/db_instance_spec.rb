@@ -78,7 +78,7 @@ describe DbInstance do
     end
   end
 
-  describe "when calling find_next_schema_version" do
+  describe "when calling find_schema_version" do
     before(:each) do
       @dbi_handle = mock(DBI::DatabaseHandle)
     end
@@ -92,14 +92,14 @@ describe DbInstance do
       @dbi_handle.stub!(:select_one).with("SELECT MAJOR,MINOR,PATCH FROM #{@schema}.schema_versions ORDER BY major DESC, minor DESC, patch DESC").and_return(latest_version_row)
       setup_handle(@dbi_handle)
 
-      @db_instance.find_next_schema_version(@username, @password, @schema).should eql('3_14_3')
+      @db_instance.find_schema_version(@username, @password, @schema, :next).should eql('3_14_3')
     end
 
     it "should find no schema version" do
       @dbi_handle.stub!(:select_one).with("SELECT MAJOR,MINOR,PATCH FROM #{@schema}.schema_versions ORDER BY major DESC, minor DESC, patch DESC").and_return(nil)
       setup_handle(@dbi_handle)
 
-      @db_instance.find_next_schema_version(@username, @password, @schema).should be_nil
+      @db_instance.find_schema_version(@username, @password, @schema, :next).should be_nil
     end
   end
 

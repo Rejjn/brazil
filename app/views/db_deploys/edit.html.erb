@@ -1,0 +1,11 @@
+<fieldset>
+  <legend>Update Database Deployment for <%=h @db_deploy %></legend>
+
+  <% form_for(@db_deploy) do |f| %>
+  	<%= render :partial => 'form', :locals => {:f => f} %>
+  
+    <p>
+      <%= f.submit 'Update Database Deployment' %>
+    </p>
+  <% end %>
+</fieldset>

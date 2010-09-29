@@ -1,4 +1,6 @@
 ActionController::Routing::Routes.draw do |map|
+  map.resources :db_deploys, :member => {:deploy_update => :put, :deploy_rollback => :put}
+
   map.resources :db_instances, :member => {:delete => :get}
 
   map.resources :apps, :except => [:destroy] do |apps|

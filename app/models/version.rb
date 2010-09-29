@@ -40,7 +40,7 @@ class Version < ActiveRecord::Base
 
   def init_schema_version(db_username, db_password)
     begin
-      next_schema_version = db_instance_test.find_next_schema_version(db_username, db_password, schema)
+      next_schema_version = db_instance_test.find_schema_version(db_username, db_password, schema, :next)
     rescue Brazil::DBException => exception
       errors.add_to_base("Could not lookup version for schema '#{schema}' (#{exception})")
       return
@@ -57,7 +57,7 @@ class Version < ActiveRecord::Base
 
   def update_schema_version(updated_schema_version, db_username, db_password)
     begin
-      next_schema_version = db_instance_test.find_next_schema_version(db_username, db_password, schema)
+      next_schema_version = db_instance_test.find_schema_version(db_username, db_password, schema, :next)
     rescue Brazil::DBException => exception
       errors.add_to_base("Could not lookup version for schema '#{schema}' (#{exception})")
       return
@@ -151,7 +151,7 @@ class Version < ActiveRecord::Base
       raise Brazil::VersionControlException, "the application must have an Version Control Path set"
     end
 
-    version_repos_path = "#{::AppConfig.vc_uri}/#{activity.app.vc_path}"
+    version_repos_path = "#{::AppConfig.vc_uri}#{activity.app.vc_path}"
     vc = Brazil::VersionControl.new(::AppConfig.vc_type, version_repos_path, vc_username, vc_password)
     unless vc.valid_credentials?
       raise Brazil::VersionControlException, "version control username or password are not correct"

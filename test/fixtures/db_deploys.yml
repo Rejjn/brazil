@@ -1,0 +1,13 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  db_instance_id: 
+  src_type: MyString
+  src_path: MyString
+  current_version: MyString
+
+two:
+  db_instance_id: 
+  src_type: MyString
+  src_path: MyString
+  current_version: MyString

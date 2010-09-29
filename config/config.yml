@@ -2,8 +2,12 @@ common:
  release_version: 1.3.3
  release_name: 'American Graffiti'
  vc_type: 'svn'
- vc_uri: ''
- vc_dir: ''
+ vc_uri: 'http://prsvn.ongame.com/svn/repos'
+ vc_dir: '/home/rinman/workspace/brazil-git/brazil/tmp/svn_tmp'
+ vc_read_user: ''
+ vc_read_password: ''
+ serenity_url: http://127.0.0.1:3001
+ serenity_clean_action: /api/clean
 
 production:
 

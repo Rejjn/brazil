@@ -1,0 +1,23 @@
+tr.db_instance.dev {
+  color: #AB3E1D;
+}
+
+tr.db_instance.dev a.dbi_link {
+  color: #AB3E1D;
+}
+
+tr.db_instance.test {
+  color: #AD8C3E;
+}
+
+tr.db_instance.test a.dbi_link {
+  color: #AD8C3E;
+}
+
+tr.db_instance.prod {
+  color: #6D924B;
+}
+
+tr.db_instance.prod a.dbi_link {
+  color: #6D924B;
+}

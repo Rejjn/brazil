@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090303095624) do
+ActiveRecord::Schema.define(:version => 20100927143248) do
 
   create_table "activities", :force => true do |t|
     t.string   "name"
@@ -34,6 +34,15 @@ ActiveRecord::Schema.define(:version => 20090303095624) do
     t.string   "state"
     t.integer  "activity_id"
     t.text     "sql"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "db_deploys", :force => true do |t|
+    t.integer  "db_instance_id_id"
+    t.string   "src_type"
+    t.string   "src_url"
+    t.string   "current_version"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

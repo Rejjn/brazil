@@ -57,7 +57,8 @@ class DbInstance < ActiveRecord::Base
     end
   end
 
-  def find_next_schema_version(username, password, schema)
+  # kind can be either :current or :next
+  def find_schema_version(username, password, schema, kind)
     schema_version = nil
     db_connection = nil
 
@@ -69,13 +70,19 @@ class DbInstance < ActiveRecord::Base
       db_connection = db_connection(username, password, schema)
       latest_version_row = db_connection.select_one("SELECT MAJOR,MINOR,PATCH FROM #{schema}.schema_versions ORDER BY major DESC, minor DESC, patch DESC")
       if latest_version_row
-        schema_version = Brazil::SchemaRevision.new(latest_version_row['MAJOR'], latest_version_row['MINOR'], latest_version_row['PATCH']).next.to_s
+        schema_version_obj = Brazil::SchemaRevision.new(latest_version_row['MAJOR'], latest_version_row['MINOR'], latest_version_row['PATCH'])
+        schema_version_obj = schema_version_obj.next if kind == :next
+        schema_version = schema_version_obj.to_s
       end
     rescue DBI::DatabaseError => exception
       # No schema_versions table found, return no schema version
     ensure
       db_connection.disconnect if db_connection
     end
+
+    if kind == :current && !schema_version
+      schema_version = "N/A"
+     end
 
     return schema_version
   end
