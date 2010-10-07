@@ -1,5 +1,5 @@
 $(document).ready(function() {
-  //brazil.manipulate.syntax_highlight();
+  brazil.manipulate.syntax_highlight();
   brazil.move.scrollable('#activity_forms');
 
   // Edit Activity

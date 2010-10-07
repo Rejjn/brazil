@@ -7,16 +7,15 @@
   </select>
 </div>
 
+<hr class="space" />
+
+<div class="span-5">
+  <%= f.label 'Schema' %><br />
+  <%= f.text_field :db_schema, :class => 'span-5' %>
+</div>
 <div class="span-8 last">
   <%= f.label 'Serenity Database' %><br />
   <%= f.check_box :serenity_db, :class => 'span-5' %>
-</div>
-
-<hr class="space" />
-
-<div class="span-8 last">
-  <%= f.label 'Schema' %><br />
-  <%= f.text_field :db_schema, :class => 'span-5' %>
 </div>
 
 <hr class="space" />
