@@ -8,6 +8,7 @@ common:
  vc_read_password: ''
  serenity_url: http://127.0.0.1:3001
  serenity_clean_action: /api/clean
+ sql_dir: '/home/rinman/workspace/brazil-git/brazil/tmp/sql'
 
 production:
 

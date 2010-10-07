@@ -19,30 +19,21 @@
   </div>
 </div>
 
-<hr class="space" />
-<hr />
+<%= hidden_field_tag 'version[schema]', f.object.activity.schema %>
 
-<div>
-  <div class="span-4">
-    <%= f.label "db_instances_test", "Test Database" %><br />
-    <%= f.collection_select :db_instance_ids, DbInstance.env_test, :id, :to_s, {:include_blank => '-- Select --'}, { :name => 'version[db_instance_ids][]', :class => 'span-4' } %>
-  </div>
-  <div class="span-6">
-    <%= f.label :schema, 'Test Database Schema' %><br />
-    <%= f.text_field :schema, :class => "span-6" %>
-  </div>
-  <div class="span-8">
-    <%= render :partial => 'shared/db_credentials_form' %>
-  </div>
-  <% unless f.object.new_record? %>
+<% unless f.object.new_record? %>
+  <hr class="space" />
+  <hr />
+  
   <div>
-    <%= label_tag :schema_version, 'Schema Version' %><br />
-    <%= text_field_tag 'schema_version_major', f.object.schema_revision.major, :size => 2 %> .
-    <%= text_field_tag 'schema_version_minor', f.object.schema_revision.minor, :size => 2 %> .
-    <%= text_field_tag 'schema_version_patch', f.object.schema_revision.patch, :size => 2 %>
+    <div>
+      <%= label_tag :schema_version, 'Schema Version' %><br />
+      <%= text_field_tag 'schema_version_major', f.object.schema_revision.major, :size => 2 %> .
+      <%= text_field_tag 'schema_version_minor', f.object.schema_revision.minor, :size => 2 %> .
+      <%= text_field_tag 'schema_version_patch', f.object.schema_revision.patch, :size => 2 %>
+    </div>
   </div>
-  <% end %>
-</div>
+<% end %>
 
 <hr class="space" />
 <hr />

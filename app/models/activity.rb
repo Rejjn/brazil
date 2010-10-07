@@ -11,7 +11,7 @@ class Activity < ActiveRecord::Base
   has_many :db_instances, :through => :db_instance_activity
 
   validates_associated :db_instances
-  validates_presence_of :name, :schema
+  validates_presence_of :name, :schema, :dev_schema
 
   # FIXME: Add before_save check state
 
@@ -35,6 +35,10 @@ class Activity < ActiveRecord::Base
 
   def deployed!
     update_attribute(:state, STATE_DEPLOYED)
+  end
+
+  def vc_path
+    "#{app.vc_path}/#{schema}/#{db_type.downcase}"
   end
 
   def to_s

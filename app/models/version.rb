@@ -2,6 +2,7 @@ require 'rio'
 
 require 'brazil/schema_revision'
 require 'brazil/version_control'
+require 'brazil/version_control_tools'
 
 class Version < ActiveRecord::Base
   STATE_CREATED = 'created'
@@ -14,38 +15,57 @@ class Version < ActiveRecord::Base
   has_many :db_instance_version
   has_many :db_instances, :through => :db_instance_version
 
-  validates_presence_of :schema, :update_sql, :rollback_sql, :schema_version
+  validates_presence_of :update_sql, :rollback_sql, :schema_version
   validates_inclusion_of :create_schema_version, :in => [true, false]
 
-  before_save :check_no_duplicate_schema_db, :update_activity_state
+  #before_save :check_no_duplicate_schema_db,
+  before_save :update_activity_state
   before_destroy :check_version_destroy_state
 
-  def deploy_to_test(versioned_update_sql, versioned_rollback_sql, db_username, db_password, vc_username, vc_password)
-    add_version_sql_to_version_control(versioned_update_sql, versioned_rollback_sql, vc_username, vc_password)
-    db_instance_test.execute_sql(versioned_update_sql, db_username, db_password, schema)
+  def deploy_to_test(versioned_update_sql, versioned_rollback_sql, db_schema, test_db_instance, test_db_schema, test_db_username, test_db_password, vc_username, vc_password)
+    db_tools = init_db(test_db_instance.host, test_db_instance.port, test_db_instance.db_type, test_db_schema, test_db_username, test_db_password)
+    db_update_sql = db_tools.prepare_sql(test_db_instance.db_type, versioned_update_sql, test_db_schema, test_db_schema, test_db_schema)
+    db_tools.execute_sql(db_update_sql)
+
+    add_version_sql_to_version_control(versioned_update_sql, versioned_rollback_sql, db_schema, vc_username, vc_password)
+    
+    return db_update_sql
   rescue Brazil::DBException => db_exception
     errors.add_to_base("SQL: #{db_exception}")
+    return db_exception.data
   rescue Brazil::VersionControlException => vc_exception
     errors.add_to_base("Version Control: could not add Version update and rollback SQL (#{vc_exception})")
   end
 
-  def rollback_from_test(versioned_rollback_sql, db_username, db_password, vc_username, vc_password)
-    delete_version_sql_from_version_control(vc_username, vc_password)
-    db_instance_test.execute_sql(versioned_rollback_sql, db_username, db_password, schema)
+  def rollback_from_test(versioned_rollback_sql, db_schema, test_db_instance, test_db_schema, test_db_username, test_db_password, vc_username, vc_password)
+    db_tools = init_db(test_db_instance.host, test_db_instance.port, test_db_instance.db_type, test_db_schema, test_db_username, test_db_password)
+    db_rollback_sql = db_tools.prepare_sql(test_db_instance.db_type, versioned_rollback_sql, test_db_schema, test_db_schema, test_db_schema)
+    db_tools.execute_sql(db_rollback_sql)
+    
+    delete_version_sql_from_version_control(db_schema, vc_username, vc_password)
+
+    return db_rollback_sql
   rescue Brazil::DBException => db_exception
     errors.add_to_base("SQL: #{db_exception}")
+    return db_exception.data
   rescue Brazil::VersionControlException => vc_exception
     errors.add_to_base("Version Control: could not delete Version update and rollback SQL (#{vc_exception})")
   end
 
-  def init_schema_version(db_username, db_password)
-    begin
-      next_schema_version = db_instance_test.find_schema_version(db_username, db_password, schema, :next)
-    rescue Brazil::DBException => exception
-      errors.add_to_base("Could not lookup version for schema '#{schema}' (#{exception})")
-      return
-    end
 
+  def init_schema_version
+    begin
+      vc_tools = Brazil::VersionControlTools.new
+      vc_tools.configure(Brazil::VersionControlTools::TYPE_SVN, ::AppConfig.vc_uri, activity.vc_path, ::AppConfig.vc_read_user, ::AppConfig.vc_read_password, ::AppConfig.vc_dir)
+
+      next_schema_version = vc_tools.find_next_schema_version
+    rescue => exception
+      unless exception.to_s =~ /reason_phrase=\"Not Found\"/ 
+        errors.add_to_base("Could not lookup version for schema '#{schema}' (#{exception})")
+        return
+      end
+    end
+    
     if next_schema_version
       self.schema_version = next_schema_version
       self.create_schema_version = false
@@ -55,13 +75,20 @@ class Version < ActiveRecord::Base
     end
   end
 
+
   def update_schema_version(updated_schema_version, db_username, db_password)
     begin
-      next_schema_version = db_instance_test.find_schema_version(db_username, db_password, schema, :next)
-    rescue Brazil::DBException => exception
-      errors.add_to_base("Could not lookup version for schema '#{schema}' (#{exception})")
-      return
+      vc_tools = Brazil::VersionControlTools.new
+      vc_tools.configure(Brazil::VersionControlTools::TYPE_SVN, ::AppConfig.vc_uri, activity.vc_path, ::AppConfig.vc_read_user, ::AppConfig.vc_read_password, ::AppConfig.vc_dir)
+      
+      next_schema_version = vc_tools.find_next_schema_version
+    rescue => exception
+      unless exception.to_s =~ /reason_phrase=\"Not Found\"/ 
+        errors.add_to_base("Could not lookup version for schema '#{schema}' (#{exception})")
+        return
+      end
     end
+
 
     next_schema_revision = Brazil::SchemaRevision.from_string(next_schema_version)
     if next_schema_version
@@ -87,15 +114,6 @@ class Version < ActiveRecord::Base
     errors.add_to_base("SQL: #{db_exception}")
   end
 
-  def db_instance_test
-    test_db_instance = DbInstance.find_all_by_id(db_instance_ids, :conditions => {:db_env => DbInstance::ENV_TEST}).first
-    if test_db_instance
-      test_db_instance
-    else
-      raise Brazil::NoDBInstanceException, "Please select a Test Database for Version"
-    end
-  end
-
   def schema_revision
     Brazil::SchemaRevision.from_string(schema_version)
   end
@@ -113,44 +131,56 @@ class Version < ActiveRecord::Base
   end
 
   def to_s
-    "#{schema}@#{db_instance_test}"
+    "#{schema} - #{schema_revision}"
   end
 
   private
 
-  def add_version_sql_to_version_control(update_sql, rollback_sql, vc_username, vc_password)
-    vc = init_vc(vc_password, vc_username)
-
-    version_working_copy = rio(::AppConfig.vc_dir, activity.app.vc_path)
-    if version_working_copy.directory?
-      vc.update(version_working_copy.path)
-    else
-      vc.checkout(version_working_copy.path)
-    end
-
-    version_update_sql, version_rollback_sql = version_sql_working_copy_paths(version_working_copy)
+  def add_version_sql_to_version_control(update_sql, rollback_sql, db_schema, vc_username, vc_password)
+    vc_tools = init_vc(vc_password, vc_username)
+    
+    version_update_sql, version_rollback_sql = version_sql_working_copy_paths(vc_tools.vc_working_copy, db_schema)
     version_update_sql.print!(update_sql)
     version_rollback_sql.print!(rollback_sql)
 
-    vc.add(rio(version_working_copy, schema).path)
-    vc.commit(version_working_copy.path, "TOOL Add version #{schema_version} SQL for #{activity.app.name} schema #{schema}")
+    logger.info "WC PATH :" << vc_tools.vc_working_copy.path
+
+    vc_tools.vc.add(rio(vc_tools.vc_working_copy, activity.schema).path)
+    vc_tools.vc.commit(vc_tools.vc_working_copy.path, "TOOL Add version #{schema_version} SQL for #{activity.app.name} schema #{schema}")
   end
 
-  def delete_version_sql_from_version_control(vc_username, vc_password)
-    vc = init_vc(vc_password, vc_username)
+  def delete_version_sql_from_version_control(db_schema, vc_username, vc_password)
+    vc_tools = init_vc(vc_password, vc_username)
 
-    version_update_sql, version_rollback_sql = version_sql_working_copy_paths(rio(::AppConfig.vc_dir, activity.app.vc_path))
-    vc.delete(version_update_sql.path)
-    vc.delete(version_rollback_sql.path)
+    version_update_sql, version_rollback_sql = version_sql_working_copy_paths(vc_tools.vc_working_copy, db_schema)
+    vc_tools.vc.delete(version_update_sql.path)
+    vc_tools.vc.delete(version_rollback_sql.path)
 
-    vc.commit([version_update_sql.path, version_rollback_sql.path], "TOOL Delete version #{schema_version} SQL for #{activity.app.name} schema #{schema}")
+    vc_tools.vc.commit([version_update_sql.path, version_rollback_sql.path], "TOOL Delete version #{schema_version} SQL for #{activity.app.name} schema #{schema}")
   end
 
   def init_vc(vc_password, vc_username)
     if activity.app.vc_path.blank?
       raise Brazil::VersionControlException, "the application must have an Version Control Path set"
     end
+    
+    vc_tools = Brazil::VersionControlTools.new
+    vc_tools.configure(Brazil::VersionControlTools::TYPE_SVN, ::AppConfig.vc_uri, activity.app.vc_path, vc_username, vc_password, ::AppConfig.vc_dir)
+    vc_tools.init_vc
+    
+    vc_tools
+  end
+  
+  
+  def init_db(host, port, db_type, db_schema, db_username, db_password)
+    db_tools = Brazil::DatabaseTools.new
+    db_tools.configure(host, port, db_type, db_schema, db_username, db_password)
+    
+    db_tools
+  end
 
+=begin
+  def init_vc(vc_password, vc_username)
     version_repos_path = "#{::AppConfig.vc_uri}#{activity.app.vc_path}"
     vc = Brazil::VersionControl.new(::AppConfig.vc_type, version_repos_path, vc_username, vc_password)
     unless vc.valid_credentials?
@@ -158,10 +188,11 @@ class Version < ActiveRecord::Base
     end
     return vc
   end
+=end
 
-  def version_sql_working_copy_paths(version_working_copy)
-    version_sql_dir = rio(version_working_copy, schema, db_instance_test.db_type.downcase).mkpath
-    [rio(version_sql_dir, "#{schema}-#{schema_version}-update.sql").mode("w+"), rio(version_sql_dir, "#{schema}-#{schema_version}-rollback.sql").mode("w+")]
+  def version_sql_working_copy_paths(version_working_copy, db_schema)
+    version_sql_dir = rio(version_working_copy, activity.schema, activity.db_type.downcase).mkpath
+    [rio(version_sql_dir, "#{db_schema}-#{schema_version}-update.sql").mode("w+"), rio(version_sql_dir, "#{db_schema}-#{schema_version}-rollback.sql").mode("w+")]
   end
 
   def check_no_duplicate_schema_db

@@ -51,7 +51,7 @@ class VersionsController < ApplicationController
   def create
     @activity = Activity.find(params[:activity_id])
     @version = @activity.versions.build(params[:version])
-    @version.init_schema_version(params[:db_username], params[:db_password])
+    @version.init_schema_version
 
     respond_to do |format|
       if @version.errors.empty? && @version.save
@@ -94,11 +94,16 @@ class VersionsController < ApplicationController
   def test
     @activity = Activity.find(params[:activity_id])
     @version = @activity.versions.find(params[:id])
-    @version.deploy_to_test(create_update_sql(@version), create_rollback_sql(@version), params[:db_username], params[:db_password], params[:vc_username], params[:vc_password])
+    if (Float(params[:test_db_instance_id]) != nil rescue false)
+      @db_instance = DbInstance.find(params[:test_db_instance_id])
+      @executed_sql = @version.deploy_to_test(create_update_sql(@version), create_rollback_sql(@version), @activity.schema, @db_instance, params[:test_schema], params[:db_username], params[:db_password], params[:vc_username], params[:vc_password])
+    else
+      @version.errors.add_to_base("Please select a Test Database!")
+    end
 
     respond_to do |format|
-      if @version.errors.empty? && @version.update_attributes(params[:version])
-        flash[:notice] = "Executed Update SQL on #{@version.db_instance_test}"
+      if @db_instance && @version.errors.empty? && @version.update_attributes(params[:version])
+        flash[:notice] = "Executed Update SQL"
         format.html { redirect_to app_activity_version_path(@activity.app, @activity, @version) }
         format.xml  { head :ok }
         format.json  { head :ok }
@@ -115,10 +120,16 @@ class VersionsController < ApplicationController
   def rollback
     @activity = Activity.find(params[:activity_id])
     @version = @activity.versions.find(params[:id])
-    @version.rollback_from_test(create_rollback_sql(@version), params[:db_username], params[:db_password], params[:vc_username], params[:vc_password])
+
+    if (Float(params[:test_db_instance_id]) != nil rescue false)    
+      @db_instance = DbInstance.find(params[:test_db_instance_id])
+      @executed_sql = @version.rollback_from_test(create_rollback_sql(@version), @activity.schema, @db_instance, params[:test_schema], params[:db_username], params[:db_password], params[:vc_username], params[:vc_password])
+    else
+      @version.errors.add_to_base("Please select a Test Database!")
+    end
 
     respond_to do |format|
-      if @version.errors.empty? && @version.update_attributes(params[:version])
+      if @db_instance && @version.errors.empty? && @version.update_attributes(params[:version])
         flash[:notice] = "Executed Rollback SQL on #{@version.db_instance_test}"
         format.html { redirect_to app_activity_version_path(@activity.app, @activity, @version) }
         format.xml  { head :ok }

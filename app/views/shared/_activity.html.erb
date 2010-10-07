@@ -1,24 +1,30 @@
 <div id="activity" class="box activity <%=h activity.state %> showgrid clearfix">
   <h2>Activity</h2>
 
-  <div class="span-6">
+  <div class="span-24 last">
     <div class="head">
       <h3><%=h activity %></h3><% if activity_show_dev_actions(activity) %><%= link_to 'edit', edit_app_activity_path(activity.app, activity), :id => 'activity_edit_button' %><% end %>
     </div>
-
+  </div>
+  
+  <div class="span-5">
     <span>Last changed <%=h time_ago_in_words(activity.updated_at) %> ago</span>
   </div>
 
-  <div class="info span-3">
+  <div class="info span-5">
     <span><strong>App</strong> <%=h activity.app %></span>
     <span class="state"><strong>State</strong> <%=h activity.state %></span>
+    <span class="db_type"><strong>DB Type</strong> <%=h activity.db_type %></span>
+    <span class="schema"><strong>Schema</strong> <%=h activity.schema %></span>
   </div>
 
-  <div class="info span-4">
+  <div class="info span-5">
     <% activity.db_instances.each do |db_instance| %>
     <span class="db"><strong><%=h db_instance.db_env.capitalize %> DB</strong> <%=h db_instance %></span>
     <% end %>
-    <span class="schema"><strong>Schema</strong> <%=h activity.schema %></span>
+    <span class="dev_schema"><strong>Dev Schema</strong> <%=h activity.dev_schema %></span>
+    <span class="dev_user"><strong>Dev User</strong> <%=h activity.dev_user %></span>
+    <span class="dev_password"><strong>Dev Password</strong> <%=h activity.dev_password %></span>
   </div>
 
   <div class="append-1">

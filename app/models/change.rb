@@ -1,3 +1,6 @@
+
+require 'brazil/version_control_tools'
+
 class Change < ActiveRecord::Base
   STATE_SUGGESTED = 'suggested'
   STATE_SAVED = 'saved'
@@ -15,20 +18,23 @@ class Change < ActiveRecord::Base
   def use_sql(sql, db_username, db_password)
     case state
     when STATE_EXECUTED
-      db_instance_dev.execute_sql(sql, db_username, db_password, activity.schema)
+      db_tools = Brazil::DatabaseTools.new
+      db_tools.configure(db_instance_dev.host, db_instance_dev.port, db_instance_dev.db_type, activity.dev_schema, activity.dev_user, activity.dev_password)
+      sql = db_tools.prepare_sql(db_instance_dev.db_type, sql, activity.dev_schema, activity.dev_schema, activity.dev_schema)
+      db_tools.execute_sql(sql)
     when STATE_SAVED
-      unless db_instance_dev.check_db_credentials(db_username, db_password, activity.schema)
-        errors.add_to_base("You don't have the Database credentials to save this change")
-        return false
-      end
+      #unless db_instance_dev.check_db_credentials(db_username, db_password, activity.dev_schema)
+      #  errors.add_to_base("You don't have the Database credentials to save this change")
+      #  return false, sql
+      #end
     else
       raise Brazil::UnknowStateException, "Unknown state for Change when trying to execute SQL, #{self}"
     end
 
-    return true
+    return true, sql
   rescue Brazil::DBException => exception
     errors.add(:sql, "not executed: #{exception.to_s}")
-    return false
+    return false, exception.data
   end
 
   def to_s

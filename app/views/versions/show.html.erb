@@ -5,6 +5,10 @@
 <%= render :partial => "shared/activity", :locals => {:activity => @activity} %>
 <%= render :partial => 'version', :locals => {:version => @version} %>
 
+<% if @executed_sql%>
+  <%= render :partial => 'shared/executed_sql', :locals => {:sql => @executed_sql} %>
+<% end %>
+
 <% if version_testable(@version) %>
 <%= render :partial => 'update_sql_fieldset', :locals => {:version => @version, :activity => @activity} %>
 <% elsif version_mergeable(@version) %>

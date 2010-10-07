@@ -38,7 +38,7 @@
     <div class="messages">
       <div id="notice" class="box success"<%= ' style="display:none;"' unless flash[:notice] %>><%= flash[:notice] %></div>
       <div id="error" class="box error"<%= ' style="display:none;"' unless flash[:error] %>><%= flash[:error] %></div>
-      <%# flash.discard %>
+      <% flash.discard %>
     </div>
 
     <div id="content" class="clearfix">

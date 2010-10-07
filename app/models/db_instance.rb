@@ -1,14 +1,15 @@
 require 'brazil/schema_revision'
+require 'brazil/database_tools'
 
 class DbInstance < ActiveRecord::Base
   ENV_DEV = 'dev'
   ENV_TEST = 'test'
   ENV_PROD = 'prod'
 
-  TYPE_MYSQL = 'MySQL'
-  TYPE_ODBC = 'ODBC'
-  TYPE_ORACLE = 'Oracle8'
-  TYPE_POSTGRES = 'PostgreSQL'
+  TYPE_MYSQL = Brazil::DatabaseTools::TYPE_MYSQL
+  TYPE_ODBC = Brazil::DatabaseTools::TYPE_ODBC
+  TYPE_ORACLE = Brazil::DatabaseTools::TYPE_ORACLE
+  TYPE_POSTGRES = Brazil::DatabaseTools::TYPE_POSTGRES
 
   validates_presence_of :db_alias, :host, :port, :db_env, :db_type
 
@@ -37,98 +38,26 @@ class DbInstance < ActiveRecord::Base
   end
 
   def execute_sql(sql, username, password, schema)
-    db_connection = nil
-    begin
-      db_connection = db_connection(username, password, schema)
-      db_connection['AutoCommit'] = false
-      db_connection.transaction do |dbh|
-        sql_no_comments = sql.gsub(/\-\-\s.*?[\n\r]/, '')
-        sql_no_comments.strip.split(/;(?:[\n\r])?/s).each do |sql_part|
-          dbh.do(sql_part.strip)
-        end
-      end
-    rescue DBI::DatabaseError => exception
-      raise Brazil::DBExecuteSQLException, exception.errstr
-    ensure
-      if db_connection
-        db_connection['AutoCommit'] = true
-        db_connection.disconnect
-      end
-    end
+    db_tools = Brazil::DatabaseTools.new
+    db_tools.configure(host, port, db_type, schema, username, password)
+
+    db_tools.execute_sql(sql)
   end
 
   # kind can be either :current or :next
-  def find_schema_version(username, password, schema, kind)
-    schema_version = nil
-    db_connection = nil
+  def find_currently_deployed_schema_version(username, password, schema)
+    db_tools = Brazil::DatabaseTools.new
+    db_tools.configure(host, port, db_type, schema, username, password)
 
-    unless check_db_credentials(username, password, schema)
-      raise Brazil::DBConnectionException, "Wrong database username or password entered"
-    end
-
-    begin
-      db_connection = db_connection(username, password, schema)
-      latest_version_row = db_connection.select_one("SELECT MAJOR,MINOR,PATCH FROM #{schema}.schema_versions ORDER BY major DESC, minor DESC, patch DESC")
-      if latest_version_row
-        schema_version_obj = Brazil::SchemaRevision.new(latest_version_row['MAJOR'], latest_version_row['MINOR'], latest_version_row['PATCH'])
-        schema_version_obj = schema_version_obj.next if kind == :next
-        schema_version = schema_version_obj.to_s
-      end
-    rescue DBI::DatabaseError => exception
-      # No schema_versions table found, return no schema version
-    ensure
-      db_connection.disconnect if db_connection
-    end
-
-    if kind == :current && !schema_version
-      schema_version = "N/A"
-     end
-
-    return schema_version
+    db_tools.find_currently_deployed_schema_version
   end
 
   def check_db_credentials(username, password, schema)
-    db_connection = nil
-    begin
-      db_connection = db_connection(username, password, schema)
-    rescue DBI::DatabaseError => exception
-      logger.warn("DB Credentials were not correct, #{username}@#{schema}")
-      return false
-    ensure
-      db_connection.disconnect if db_connection
-    end
+    db_tools = Brazil::DatabaseTools.new
+    db_tools.configure(host, port, db_type, schema, username, password)
 
-    return true
+    return db_tools.check_db_credentials
   end
 
   private
-
-  def db_connection(username, password, schema)
-    begin
-      require 'dbi'
-    rescue LoadError
-      raise Brazil::LoadException, 'Failed to load the DBI module, please install.'
-    end
-
-    connection = nil
-    case db_type
-    when TYPE_MYSQL
-      connection = DBI.connect("DBI:Mysql:database=#{schema};host=#{host};port=#{port}", username, password)
-      connection.do('SET NAMES utf8') if connection
-    # when TYPE_ODBC
-    when TYPE_ORACLE
-      oracle_host, oracle_instance = host.split('/')
-      connection = DBI.connect("DBI:OCI8://#{oracle_host}:#{port}/#{oracle_instance}", username, password)
-    when TYPE_POSTGRES
-      connection = DBI.connect("DBI:Pg:database=#{schema};host=#{host};port=#{port}", username, password)
-    else
-      raise Brazil::UnknownDBTypeException, "Trying to create connection for unsupported DB Type: #{db_type}"
-    end
-
-    if connection.nil?
-      raise Brazil::DBConnectionException, "Failed to connect to DB (#{username}@#{host}:#{port}/#{schema})"
-    else
-      return connection
-    end
-  end
 end

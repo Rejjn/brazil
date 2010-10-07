@@ -4,6 +4,9 @@
 <% end %>
 
 <%= render :partial => "shared/activity", :locals => {:activity => @activity} %>
+
+<%= render :partial => "shared/executed_sql", :locals => {} %>
+
 <div id="changes" class="span-13 border">
   <% unless @activity.changes.all.empty? %>
     <%= render :partial => "changes/change", :collection => @activity.changes.all %>

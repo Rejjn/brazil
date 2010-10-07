@@ -1,6 +1,15 @@
 @import url('/stylesheets/syntaxhighlighter/shCore.css');
 @import url('/stylesheets/syntaxhighlighter/shThemeDefault.css');
 
+#deployed_sql {
+  display: none;
+}
+
+#sql_show_controls_div  {
+  float: right;
+  margin-right: 50px;
+}
+
 .box.change {
   background:#f4f4f4;
   border: 2px solid #888;

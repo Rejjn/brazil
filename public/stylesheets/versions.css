@@ -1,6 +1,20 @@
 @import url('/stylesheets/syntaxhighlighter/shCore.css');
 @import url('/stylesheets/syntaxhighlighter/shThemeDefault.css');
 
+#deployed_sql {
+  display: none;
+}
+
+#sql_show_controls_div  {
+  float: right;
+  margin-right: 50px;
+}
+
+input.execute_button {
+  float: right;
+  margin-right: 50px;
+}
+
 .box.version {
   border:2px solid #ddd;
   background:#EAF2E4;
@@ -33,5 +47,4 @@
 textarea.sql {
   height: 20em;
 }
-
 

@@ -1,5 +1,7 @@
 module Brazil
-  class Error < RuntimeError; end
+  class Error < RuntimeError
+      attr_accessor :data
+  end
 
   class UnknowStateException < Error; end
   class LoadException < Error; end
@@ -10,6 +12,9 @@ module Brazil
   class DBExecuteSQLException < DBException; end
   class UnknownDBTypeException < DBException; end
   class NoVersionTableException < DBException; end
+  class InvalidTargetVersionException < DBException; end
+  
+  class RemoteAPIException < Error; end
 
   class VersionControlException < Error; end
 end

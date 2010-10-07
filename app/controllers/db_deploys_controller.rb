@@ -15,13 +15,19 @@ class DbDeploysController < ApplicationController
   def show
     @db_deploy = DbDeploy.find(params[:id])
     
-    #TODO
-    @current_version = @db_deploy.db_instance.find_schema_version(@db_deploy.db_instance.to_s, @db_deploy.db_instance.to_s, @db_deploy.db_instance.to_s, :current)
-    @update_versions,@rollback_versions = @db_deploy.find_available_versions @current_version
-
     respond_to do |format|
-      format.html # show.html.erb
-      format.xml  { render :xml => @db_deploy }
+      begin 
+        #TODO
+        @current_version = @db_deploy.db_instance.find_currently_deployed_schema_version(@db_deploy.db_user, @db_deploy.db_password, @db_deploy.db_schema)
+        @update_versions,@rollback_versions = @db_deploy.find_available_versions @current_version
+        format.html # show.html.erb
+        format.xml  { render :xml => @db_deploy }
+      rescue => exception
+        compile_grouped_dbi_list
+        flash[:error] = "#{exception} (#{exception.class})"
+        format.html { render :action => "edit" }
+        format.xml  { render :xml => @db_deploy.errors, :status => :unprocessable_entity }
+      end
     end
   end
 
@@ -56,6 +62,7 @@ class DbDeploysController < ApplicationController
         format.html { redirect_to(@db_deploy) }
         format.xml  { render :xml => @db_deploy, :status => :created, :location => @db_deploy }
       else
+        compile_grouped_dbi_list
         format.html { render :action => "new" }
         format.xml  { render :xml => @db_deploy.errors, :status => :unprocessable_entity }
       end
@@ -103,13 +110,13 @@ class DbDeploysController < ApplicationController
         format.xml  { head :ok }
       rescue
         flash[:error] = "Failed to deploy database update. (#{$!})"
-        raise $!
+        #raise $!
                 
         format.html { render :action => "show" }
         format.xml  { render :xml => @db_deploy.errors, :status => :unprocessable_entity }
       ensure
         #TODO
-        @current_version = @db_deploy.db_instance.find_schema_version(@db_deploy.db_instance.to_s, @db_deploy.db_instance.to_s, @db_deploy.db_instance.to_s, :current)
+        @current_version = @db_deploy.db_instance.find_currently_deployed_schema_version(@db_deploy.db_user, @db_deploy.db_password, @db_deploy.db_schema)
         @update_versions, @rollback_versions = @db_deploy.find_available_versions @current_version
       end
     end
@@ -127,13 +134,13 @@ class DbDeploysController < ApplicationController
         format.xml  { head :ok }
       rescue
         flash[:error] = "Failed to deploy database rollback. (#{$!})"
-        raise $!
+        #raise $!
                 
         format.html { render :action => "show" }
         format.xml  { render :xml => @db_deploy.errors, :status => :unprocessable_entity }
       ensure
-        #TODO
-        @current_version = @db_deploy.db_instance.find_schema_version(@db_deploy.db_instance.to_s, @db_deploy.db_instance.to_s, @db_deploy.db_instance.to_s, :current)
+        
+        @current_version = @db_deploy.db_instance.find_currently_deployed_schema_version(@db_deploy.db_user, @db_deploy.db_password, @db_deploy.db_schema)
         @update_versions, @rollback_versions = @db_deploy.find_available_versions @current_version
       end
     end
@@ -146,7 +153,7 @@ class DbDeploysController < ApplicationController
 
     if params.has_key?(:id)
       object = DbDeploy.find(params[:id])
-      add_crumb object.db_instance.to_s, db_deploy_path(object)
+      add_crumb object.to_s, db_deploy_path(object)
     end
   end  
 

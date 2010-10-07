@@ -1,3 +1,6 @@
+
+require 'brazil/sessionsql_storage'
+
 class ChangesController < ApplicationController
   # GET /apps/:app_id/activities/:activity_id/changes.xml
   def index
@@ -42,8 +45,14 @@ class ChangesController < ApplicationController
       @change.state = Change::STATE_SAVED
     end
 
+    success = @change.valid? 
+    success, sql = @change.use_sql(@change.sql, params[:db_username], params[:db_password]) if success
+    success = @change.save if success
+    
+    session[:sql_store] = Brazil::SessionSQLStorage.store_sql(sql)
+    
     respond_to do |format|
-      if @change.valid? && @change.use_sql(@change.sql, params[:db_username], params[:db_password]) && @change.save
+      if success 
         flash[:notice] = 'Database change was successfully created.'
         format.html do
           if request.xhr?

@@ -12,6 +12,8 @@ ActionController::Routing::Routes.draw do |map|
   end
 
   map.connect 'flash/:action', :controller => 'flash'
+  
+  map.connect 'api/:action', :controller => 'api'
 
   # You can have the root of your site routed with map.root
   map.root :controller => "apps"

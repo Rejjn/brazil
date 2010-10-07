@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100927143248) do
+ActiveRecord::Schema.define(:version => 20100929163830) do
 
   create_table "activities", :force => true do |t|
     t.string   "name"
@@ -19,6 +19,10 @@ ActiveRecord::Schema.define(:version => 20100927143248) do
     t.integer  "app_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "db_type"
+    t.string   "dev_schema"
+    t.string   "dev_user"
+    t.string   "dev_password"
   end
 
   create_table "apps", :force => true do |t|
@@ -39,10 +43,14 @@ ActiveRecord::Schema.define(:version => 20100927143248) do
   end
 
   create_table "db_deploys", :force => true do |t|
-    t.integer  "db_instance_id_id"
+    t.integer  "db_instance_id"
+    t.string   "db_schema"
+    t.string   "db_user"
+    t.string   "db_password"
     t.string   "src_type"
-    t.string   "src_url"
+    t.string   "src_path"
     t.string   "current_version"
+    t.boolean  "serenity_db"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

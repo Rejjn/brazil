@@ -102,6 +102,14 @@ var brazil = function() {
         });
       }
     },
+    sql : {
+      show: function() {
+        jQuery.get('/flash/executed_sql', function(response) {
+          jQuery('#deployed_sql').html(response);
+          jQuery('#executed_sql_div').fadeIn('slow');
+        });
+      },
+    },
     manipulate: {
       syntax_highlight: function() {
         if (typeof SyntaxHighlighter != "undefined") {
@@ -230,3 +238,14 @@ var brazil = function() {
     }
   }
 }();
+
+function sql_show_controls(){
+  if ($("#deployed_sql").is(":hidden")) {
+    $("#deployed_sql").slideDown("slow");
+    $("#sql_show_controls").html("Hide SQL");
+  }
+  else {
+    $("#deployed_sql").slideUp();
+    $("#sql_show_controls").html("Show SQL");
+  }
+}
