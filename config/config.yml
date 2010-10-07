@@ -1,6 +1,6 @@
 common:
- release_version: 1.3.3
- release_name: 'American Graffiti'
+ release_version: 1.4
+ release_name: 'Serenity'
  vc_type: 'svn'
  vc_uri: 'http://prsvn.ongame.com/svn/repos'
  vc_dir: '/home/rinman/workspace/brazil-git/brazil/tmp/svn_tmp'
