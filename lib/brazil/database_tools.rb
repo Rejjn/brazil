@@ -250,13 +250,9 @@ module Brazil
       case db_type
         when TYPE_ORACLE then
           sql.each do |line|
-            puts "-----------------------"
-            puts line 
-
             #find all occurrences of schema name
             line.gsub!(/\s+\w+\.(\w+)/, " #{schema_name}.\\1")
             line.gsub!(/(TableSpace)\s+("?)(\w+)_(DATA|INDEX|IDX)("?)/i, "\\1 \\2#{schema_name}_\\4\\5")
-            puts line
             
             #find all occurrences of user name
             
