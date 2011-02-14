@@ -6,7 +6,7 @@ common:
  vc_dir: '/home/rinman/workspace/brazil-git/brazil/tmp/svn_tmp'
  vc_read_user: ''
  vc_read_password: ''
- serenity_url: http://127.0.0.1:3001
+ serenity_url: http://serenity.vte.b2c
  serenity_clean_action: /api/clean
  sql_dir: '/home/rinman/workspace/brazil-git/brazil/tmp/sql'
 

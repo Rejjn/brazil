@@ -35,9 +35,9 @@
   <%= f.label 'Source Type' %><br />
   <%= f.select(:src_type, DbDeploy.source_types) %>
 </div>
-<div class="span-8 last">
+<div class="span-16 last">
   <%= f.label 'Source Path' %><br />
-  <%= f.text_field :src_path, :class => 'span-8' %>
+  <%=h vc_uri %> <%= f.text_field :src_path, :class => 'span-8' %>
 </div>
 
 <hr class="space" />

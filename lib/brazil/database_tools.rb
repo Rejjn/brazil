@@ -250,15 +250,19 @@ module Brazil
       case db_type
         when TYPE_ORACLE then
           sql.each do |line|
+            schema_regexp = '[\w\d\_\-]+' 
+            
             #find all occurrences of schema name
-            line.gsub!(/\s+\w+\.(\w+)/, " #{schema_name}.\\1")
-            line.gsub!(/(TableSpace)\s+("?)(\w+)_(DATA|INDEX|IDX)("?)/i, "\\1 \\2#{schema_name}_\\4\\5")
+            line.gsub!(/\s+#{schema_regexp}\.(#{schema_regexp})/, " #{schema_name}.\\1")
+            line.gsub!(/VALUES\s*\(\s*#{schema_regexp}\.(#{schema_regexp})/, "VALUES(#{schema_name}.\\1")
+            line.gsub!(/(TableSpace)\s+("?)(#{schema_regexp})_(DATA|INDEX|IDX)("?)/i, "\\1 \\2#{schema_name}_\\4\\5")
             
             #find all occurrences of user name
+            line.gsub!(/grant ([\w ,]+) on #{schema_regexp}.(\w+) to [\w\d\_\-]+;/i, "grant \\1 on #{schema_name}.\\2 to #{schema_name}_APP;")
             
             #find all occurrences of user role
-            line.gsub!(/(To|From)\s+\w+_role([\n\s,;])/i, "\\1 #{schema_name}_ROLE\\2")
-          end
+            line.gsub!(/(To|From)\s+#{schema_regexp}_role([\n\s,;])/i, "\\1 #{schema_name}_ROLE\\2")
+        end
         when TYPE_MYSQL then
           
           sql.each do |line|
@@ -266,8 +270,8 @@ module Brazil
             line.gsub!(/USE \w+;[\s\n\r]+/, "")
             #line.gsub!(/\/\*\!.+;[\s\n\r]+/, "")
             
-            line.gsub!(/\s+\w+\.(\w+)/i, " #{schema_name}.\\1")
-          end
+            line.gsub!(/\s+[\w\d_-]+\.(\w+)/i, " #{schema_name}.\\1")
+        end
       end
 
       if sql.is_a? Array 

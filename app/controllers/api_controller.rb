@@ -10,16 +10,16 @@ class ApiController < ApplicationController
   def update
     respond_to do |format|
       begin
-        raise RuntimeError, "parameter :host must be present" unless params[:host]
-        raise RuntimeError, "parameter :port must be present" unless params[:port]
-        raise RuntimeError, "parameter :db_type must be present" unless params[:db_type]
-        raise RuntimeError, "parameter :db_schema must be present" unless params[:db_schema]
-        raise RuntimeError, "parameter :db_user must be present" unless params[:db_user]
-        raise RuntimeError, "parameter :db_password must be present" unless params[:db_password]
-        raise RuntimeError, "parameter :src_type must be present" unless params[:src_type]
-        raise RuntimeError, "parameter :src_uri must be present" unless params[:src_uri]
-        raise RuntimeError, "parameter :src_path must be present" unless params[:src_path]
-        raise RuntimeError, "parameter :target_version must be present" unless params[:target_version]
+        raise RuntimeError, "parameter <host(/sid)> must be present" unless params[:host]
+        raise RuntimeError, "parameter <port> must be present" unless params[:port]
+        raise RuntimeError, "parameter <db_type> must be present" unless params[:db_type]
+        raise RuntimeError, "parameter <db_schema> must be present" unless params[:db_schema]
+        raise RuntimeError, "parameter <db_user> must be present" unless params[:db_user]
+        raise RuntimeError, "parameter <db_password> must be present" unless params[:db_password]
+        raise RuntimeError, "parameter <src_type> must be present" unless params[:src_type]
+        raise RuntimeError, "parameter <src_uri> must be present" unless params[:src_uri]
+        raise RuntimeError, "parameter <src_path> must be present" unless params[:src_path]
+        raise RuntimeError, "parameter <target_version> must be present" unless params[:target_version]
         
         db_tools = Brazil::DatabaseTools.new
         db_tools.configure(params[:host], params[:port], params[:db_type], params[:db_schema], params[:db_user], params[:db_password])
@@ -48,16 +48,16 @@ class ApiController < ApplicationController
   def rollback
     respond_to do |format|
       begin
-        raise RuntimeError, "parameter :host must be present" unless params[:host]
-        raise RuntimeError, "parameter :port must be present" unless params[:port]
-        raise RuntimeError, "parameter :db_type must be present" unless params[:db_type]
-        raise RuntimeError, "parameter :db_schema must be present" unless params[:db_schema]
-        raise RuntimeError, "parameter :db_user must be present" unless params[:db_user]
-        raise RuntimeError, "parameter :db_password must be present" unless params[:db_password]
-        raise RuntimeError, "parameter :src_type must be present" unless params[:src_type]
-        raise RuntimeError, "parameter :src_uri must be present" unless params[:src_uri]
-        raise RuntimeError, "parameter :src_path must be present" unless params[:src_path]
-        raise RuntimeError, "parameter :target_version must be present" unless params[:target_version]
+        raise RuntimeError, "parameter <host> must be present" unless params[:host]
+        raise RuntimeError, "parameter <port> must be present" unless params[:port]
+        raise RuntimeError, "parameter <db_type> must be present" unless params[:db_type]
+        raise RuntimeError, "parameter <db_schema> must be present" unless params[:db_schema]
+        raise RuntimeError, "parameter <db_user> must be present" unless params[:db_user]
+        raise RuntimeError, "parameter <db_password> must be present" unless params[:db_password]
+        raise RuntimeError, "parameter <src_type> must be present" unless params[:src_type]
+        raise RuntimeError, "parameter <src_uri> must be present" unless params[:src_uri]
+        raise RuntimeError, "parameter <src_path> must be present" unless params[:src_path]
+        raise RuntimeError, "parameter <target_version> must be present" unless params[:target_version]
         
         db_tools = Brazil::DatabaseTools.new
         db_tools.configure(params[:host], params[:port], params[:db_type], params[:db_schema], params[:db_user], params[:db_password])
