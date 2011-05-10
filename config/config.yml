@@ -1,6 +1,6 @@
 common:
- release_version: 1.4
- release_name: 'Serenity'
+ release_version: 2.0
+ release_name: 'Brave New World'
  vc_type: 'svn'
  vc_uri: 'http://prsvn.ongame.com/svn/repos'
  vc_dir: '/home/rinman/workspace/brazil-git/brazil/tmp/svn_tmp'
@@ -9,6 +9,10 @@ common:
  serenity_url: http://serenity.vte.b2c
  serenity_clean_action: /api/clean
  sql_dir: '/home/rinman/workspace/brazil-git/brazil/tmp/sql'
+ admins: fredrikr
+ ad_domain: ongame
+ ad_host: ad.ongame.com
+ ad_port: 389
 
 production:
 

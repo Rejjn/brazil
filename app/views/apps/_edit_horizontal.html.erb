@@ -1,16 +1,18 @@
 <% form_for(app, :url => app_path(app)) do |f| %>
   <%= render :partial => 'shared/form_error', :locals => {:f => f} %>
   <div>
-    <div class="span-4">
+    <div class="span-12 last">
       <%= f.label :name %><br />
       <%= f.text_field :name, :class => 'span-4' %>
     </div>
-    <div class="span-5">
-      <%= f.label :vc_path, 'Version Control Path' %><br />
-      <%= f.text_field :vc_path, :class => 'span-5' %>
+    <div class="span-12 last">
+      <%= f.label :vc_path, 'Version Control Path (ex. /app_name/trunk/db)' %><br />
+      <iframe id="repo_browser" src="/repo_browser/?url=<%= app.vc_path %>" width="400" height="200" frameBorder="0" onload="brazil.repo_browser.set_url();">
+        <p>Your browser does not support iframes.</p>
+      </iframe>
+      <%= f.text_field :vc_path, :class => 'span-12' %>
     </div>
-    <div class="span-3 last">
-      <br />
+    <div class="span-12 last">
       <%= f.submit 'Save' %><%= f.submit "Cancel", :name => 'cancel_edit_app_button', :class => 'form_close' %>
     </div>
   </div>

@@ -2,10 +2,13 @@ module Brazil
   class SchemaRevision
     include Comparable
 
-    def initialize(major, minor, patch)
+    def initialize(major, minor, patch, created = nil, description = nil)
       @major = major.to_i if major
       @minor = minor.to_i if minor
       @patch = patch.to_i if patch
+      
+      @created = created
+      @description = description
     end
 
     def self.from_string(version)
@@ -55,6 +58,14 @@ module Brazil
 
     def patch
       @patch.to_i
+    end
+
+    def created
+      @created
+    end
+
+    def description
+      @description
     end
 
   end

@@ -2,7 +2,7 @@
   <%= javascript_include_tag "jquery/jquery.scrollfollow" %>
 <% end %>
 
-<div id="app-list" class="span-12 border">
+<div id="app-list" class="span-14 border">
   <% unless @apps.empty? %>
     <% @apps.each do |app| %>
     <div class="app">
@@ -30,6 +30,7 @@
           <td colspan="4">
             <ul class="actions">
               <li><%= link_to 'New Activity', new_app_activity_path(app), :class => 'add_activities_button' %></li>
+              <li class="destroy"><%= link_to 'Delete', delete_app_path(app) %></li>
             </ul>
           </td>
         </tr>
@@ -41,6 +42,6 @@
   <% end %>
 </div>
 
-<div id="app_forms" class="span-12 last">
+<div id="app_forms" class="span-10 last">
   <%= render :partial => 'new', :locals => {:app => @app} %>
 </div>

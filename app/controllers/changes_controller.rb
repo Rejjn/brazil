@@ -38,8 +38,10 @@ class ChangesController < ApplicationController
   def create
     @activity = Activity.find(params[:activity_id])
     @change = @activity.changes.build(params[:change])
+    @change.developer = session[:user]
 
     if params[:create_change_execute_button]
+      session[:sql_store] = Brazil::SessionSQLStorage.store_sql(@change.sql)
       @change.state = Change::STATE_EXECUTED
     else
       @change.state = Change::STATE_SAVED
@@ -48,8 +50,6 @@ class ChangesController < ApplicationController
     success = @change.valid? 
     success, sql = @change.use_sql(@change.sql, params[:db_username], params[:db_password]) if success
     success = @change.save if success
-    
-    session[:sql_store] = Brazil::SessionSQLStorage.store_sql(sql)
     
     respond_to do |format|
       if success 
@@ -126,6 +126,41 @@ class ChangesController < ApplicationController
         format.xml  { render :xml => @change.errors, :status => :unprocessable_entity }
         format.json  { render :json => @change.errors, :status => :unprocessable_entity }
       end
+    end
+  end
+
+  # DELETE
+  # DELETE
+  def destroy
+    @change = Change.find(params[:id])
+    @activity = @change.activity
+    @change.destroy
+
+    flash[:notice] = 'Change successfully deleted'
+
+    respond_to do |format|
+      format.html { redirect_to(app_activity_url(@activity.app, @activity)) }
+      format.xml  { head :ok }
+    end
+  end
+
+  def execute
+    @activity = Activity.find(params[:activity_id])
+    @change = @activity.changes.find(params[:id])
+    @change.state = Change::STATE_EXECUTED
+    @change.save
+    
+    @executed_change_id = @change.id
+
+    session[:sql_store] = Brazil::SessionSQLStorage.store_sql(@change.sql)
+
+    flash[:notice] = 'Change SQL successfully executed'
+    
+    sleep 3
+    
+    respond_to do |format|
+      format.html { render :partial => "change", :collection => @activity.changes } #, :status => :unprocessable_entity
+      format.xml  { render :xml => @change }
     end
   end
 

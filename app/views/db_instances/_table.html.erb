@@ -19,9 +19,9 @@
       <td><%= h db_instance.db_type %></td>
       <td>
         <ul class="actions">
-          <li class="destroy"><%= link_to 'Delete', delete_db_instance_path(db_instance) %></li>
           <li><%= link_to 'Show', db_instance_path(db_instance) %></li>
           <li><%= link_to 'Edit', edit_db_instance_path(db_instance) %></li>
+          <li class="destroy"><%= link_to 'Delete', delete_db_instance_path(db_instance) %></li>
         </ul>
       </td>
     </tr>

@@ -43,11 +43,11 @@ a:hover {
   padding:0 0 10px 0;
 }
 
-.people {
+.item_meta {
   color:#888;
 }
 
-.people span {
+.item_meta span {
   display: block;
 }
 
@@ -70,8 +70,25 @@ a:hover {
   float:right;
 }
 
+.actions li a.disabled {
+  background: #ddd;
+  color: #333;
+  border-color: #999;
+}
+
+.actions li a.disabled img {
+  position: relative;
+  top: 2px;
+  height: 1em;
+}
+
 .actions li.destroy {
-  float:left;
+  float:right;
+  margin-right: 25px;
+}
+
+.actions li.destroy.nomargin {
+  margin-right: 0px;
 }
 
 .actions li.destroy a {
@@ -80,11 +97,18 @@ a:hover {
   border-color:#FBC2C4;
 }
 
+.actions li.attention a {
+  background:#f5ef96;
+  border-color:#d5cb33;
+  color:#585415;
+}
+
 .actions li a {
   display:block;
   padding:2px 18px;
   border:1px solid #C6D880;
-  background:#E6EFC2;color:#264409;
+  background:#E6EFC2;
+  color:#264409;
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
   border-radius: 4px;
@@ -100,12 +124,13 @@ td {
 }
 
 fieldset {
+  padding-top: 5px;
   position: relative;
 }
 
-fieldset > a.form_close {
+a.form_close {
   position:absolute;
-  top:3px;
+  top:0px;
   right:-3px;
 }
 
@@ -128,6 +153,12 @@ fieldset > a.form_close {
 #brazil-release {
   float: right;
 }
+
+#user-info {
+  float: right;
+  margin-right: 20px;
+}
+
 
 .box hr {
   background-color: #888;
@@ -162,6 +193,57 @@ fieldset > a.form_close {
   color: #FFF;
 }
 
+.box.app {
+  border: 2px solid #b8bdc7;
+  background: #d1e2ff;
+}
+
+.box.app h2 {
+  border: 3px solid #6D924B;
+  background:#86B35C;
+  color: #FFF;
+}
+
+.box.db_instance {
+  border: 2px solid #b5b37b;
+  background: #edebbf;
+}
+
+.box.db_instance h2 {
+  border: 3px solid #6D924B;
+  background:#86B35C;
+  color: #FFF;
+}
+
+.box.db_instance.dev h2 {
+  border: 3px solid #853016;
+  background: #AB3E1D;
+  color: #FFF;
+}
+
+.box.db_instance.test h2 {
+  border: 3px solid #76602a;
+  background: #AD8C3E;
+  color: #FFF;
+}
+
+.box.db_instance.prod h2 {
+  border: 3px solid #4b6433;
+  background: #6D924B;
+  color: #FFF;
+}
+
+.box.schema {
+  border: 2px solid #b5b37b;
+  background: #f2d7a8;
+}
+
+.box.schema h2 {
+  border: 3px solid #6D924B;
+  background:#86B35C;
+  color: #FFF;
+}
+
 .head {
   margin-bottom: 0.4em;
 }
@@ -182,6 +264,7 @@ h3 {
 div.fieldWithErrors {
   display: inline;
 }
+
 div.fieldWithErrors input, div.fieldWithErrors textarea {
   background:#FBE3E4;
   color:#8a1f11;
@@ -191,5 +274,75 @@ div.fieldWithErrors input, div.fieldWithErrors textarea {
 pre {
   overflow: auto;
 	overflow-Y: hidden; /*--Hides vertical scroll created by IE--*/
-  background: #EEE;
+  background: #FFF;
+  border: 1px solid #DDD;
+  padding: 5px;
+}
+
+a.delete_app_button {
+  float: right;
+}
+
+h4 {
+  margin: 0px;
+  padding: 0px;
+}
+
+#change_notice, #change_error, #deploy_notice, #deploy_error{
+  display:none;  
+}
+
+.attribute_warning {
+  color: #A25700;
+}
+
+div.attribute_warning {
+  position: absolute;
+  top: 0px;
+  left: 0px; 
+  z-index: 100;
+  background: #FFE6B3 url('../../images/dialog-error.png') no-repeat 8px 8px;
+  color: #A25700;
+  border: 1px solid #FFAD00;
+  padding: 5px 5px 5px 30px;
+  display: inline;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  -webkit-box-shadow: 0.2em 0.2em 0.2em rgba(0, 0, 0, 0.4);
+  box-shadow: 0.2em 0.2em 0.2em rgba(0, 0, 0, 0.4);
+}
+
+.warning_close img {
+  margin: 0px 0px 0px 8px;
+  position: relative;
+  top: 3px;
+}
+
+img.version_test_status {
+  position: relative;
+  top: 4px;
+}
+
+input.clean_button {
+  float:right;
+}
+
+fieldset.delete {
+  border: 1px solid #AB3E1D;
+}
+
+fieldset.delete legend {
+  color: #AB3E1D;
+}
+
+tr.activity.development, tr.activity.development a {
+  color: #AB3E1D;
+}
+
+tr.activity.versioned, tr.activity.versioned a {
+  color: #AD8C3E;
+}
+
+tr.activity.deployed, tr.activity.deployed a {
+  color: #6D924B;
 }

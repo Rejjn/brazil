@@ -1,13 +1,24 @@
 <a name="change-<%=h change %>"></a>
+<% if @executed_change_id && @executed_change_id == change.id%>
+    <div class="messages">
+      <div id="change_notice" class="box success"></div>
+      <div id="change_error" class="box error"></div>
+    </div>
+<% end %>
+
 <div class="box change <%=h change.state %>">
-  <h2>Change</h2>
+  <h2 title="State of this change: <%=h change.state %>">Change</h2>
   <h3><%=h change.created_at.to_s(:long) %> (<%=h time_ago_in_words(change.created_at) %> ago)</h3>
   <pre class="brush: sql; toolbar: false"><%=h change.sql %></pre>
-  <div class="people">
-    <span class="dba"><strong>DBA</strong> <%=h change.dba %></span>
-    <span class="developer"><strong>Developer</strong> <%=h change.developer %></span>
+  <div class="item_meta">
+    <span><strong>Developer</strong> <%=h change.developer %></span>
+    <span><strong>State</strong> <%=h change.state %></span>
   </div>
   <ul class="actions clearfix">
-    <li><%= change_action_link(change) %></li>
+    <% if show_change_dev_actions(change) %>
+      <li><%= link_to('Execute', execute_app_activity_change_path(change.activity.app, change.activity, change), :class => 'execute_change_button') %></li>
+      <li><%= link_to('Edit', edit_app_activity_change_path(change.activity.app, change.activity, change), :class => 'edit_change_button') %></li>
+      <li class='destroy'><%= link_to('Delete', app_activity_change_path(change.activity.app, change.activity, change), :method => :delete, :confirm => delete_warning_text(change)) %></li>
+    <% end %>
   </ul>
 </div>

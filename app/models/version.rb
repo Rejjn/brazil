@@ -1,8 +1,8 @@
 require 'rio'
 
 require 'brazil/schema_revision'
+require 'brazil/schema_version_control'
 require 'brazil/version_control'
-require 'brazil/version_control_tools'
 
 class Version < ActiveRecord::Base
   STATE_CREATED = 'created'

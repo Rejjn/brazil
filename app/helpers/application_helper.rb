@@ -1,4 +1,3 @@
-# Methods added to this helper will be available to all templates in the application.
 module ApplicationHelper
   def generate_title(crumbs)
     title = ''
@@ -49,5 +48,31 @@ module ApplicationHelper
 
   def email_to_realname(email)
     email.split('@').first.split('.').each {|email_part| email_part.capitalize!}.join(' ') unless email.nil?
+  end
+  
+  
+  def delete_warning_text deletable_entity
+    warning = "YOU ARE ABOUT TO DELETE A#{"N" if deletable_entity.class.to_s[0] == 65 } #{deletable_entity.class.to_s.upcase}!\n\n"
+    warning << "Are you really sure you want to delete the #{deletable_entity.class.to_s.downcase}:\n- #{deletable_entity}\n\n"
+    
+    case deletable_entity.class.to_s
+      when App.to_s
+        warning << "Deleting this app will also delete the following actvivites:\n"
+        deletable_entity.activities.each do |activity|
+          warning << "- #{activity}, #{activity.changes.count} changes, #{activity.state}\n"
+        end
+        warning << "\n"
+      when Activity.to_s
+        warning << "Deleting this activity will delete all of its changes and any versions.\n"
+        warning << "\n"
+      when Change.to_s
+        cut_off_length = 400
+        last_2_lines = ''
+        last_2_lines = deletable_entity.sql.split("\n").pop if deletable_entity.sql.length > cut_off_length
+        warning << "SQL:\n#{truncate(deletable_entity.sql, :length => cut_off_length, :seperator => "\n", :omission => "\n\n... (continued, #{deletable_entity.sql.length-cut_off_length-last_2_lines.length} chars) ...\n")}\n"
+        warning << last_2_lines 
+        warning << "\n"
+    end
+    warning
   end
 end

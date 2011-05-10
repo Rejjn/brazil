@@ -1,13 +1,16 @@
-<div id="executed_sql_div" <%= "style=\"display: none;\"" unless defined? sql %>>
+<div id="executed_sql_div" style="display: none;">
   <% content_for :view_external_js do %>
     <%= javascript_include_tag "syntaxhighlighter/shCore", "syntaxhighlighter/shBrushSql" %>
     <%= javascript_include_tag "jquery/jquery.scrollfollow" %>
   <% end %>
 
   <div class="box">
-    <div id="sql_show_controls_div"> <a id="sql_show_controls" onclick="sql_show_controls();">Show SQL</a></div>
+    <div id="sql_show_controls_div">
+      <a href="#" class="form_close" onclick="brazil.sql.close();"><img src="/images/forms/x.gif" /></a> 
+    </div>
+    
     <h3>SQL</h3>
     
-    <div id="deployed_sql"><pre class="brush: sql;"><%= sql if defined? sql %><%= @sql if defined? @sql %></pre></div>
+    <div id="deployed_sql"><pre class="brush: sql;"></pre></div>
   </div>
 </div>

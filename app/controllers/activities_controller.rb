@@ -28,7 +28,6 @@ class ActivitiesController < ApplicationController
 
     latest_change = Change.first(:conditions => {:activity_id => params[:id], :state => [Change::STATE_EXECUTED, Change::STATE_SAVED]}, :order => 'created_at DESC')
     if latest_change
-      @change.dba = latest_change.dba
       @change.developer = latest_change.developer
     end
 
@@ -124,6 +123,72 @@ class ActivitiesController < ApplicationController
       end
     end
   end
+
+  # DELETE 
+  # DELETE 
+  def destroy
+    @activity = Activity.find(params[:id])
+    @activity.destroy
+
+    respond_to do |format|
+      format.html { redirect_to(app_activities_url(params[:app_id])) }
+      format.xml  { head :ok }
+    end
+  end
+  
+  def execute
+    @activity = Activity.find(params[:id])
+    
+    sql = ''
+    @activity.changes.each do |change|
+      sql << "\n" << change.sql
+    end
+
+    session[:sql_store] = Brazil::SessionSQLStorage.store_sql(sql)
+
+    flash[:notice] = 'Activity SQL successfully executed'
+    #flash[:error] = 'Error while executing activity SQL'
+    
+    sleep 1
+    
+    ## greate success
+    @activity.changes.each do |change|
+      change.update_attribute(:state, Change::STATE_EXECUTED)
+    end
+    
+    respond_to do |format|
+      format.html { render :partial => "changes/change", :collection => @activity.changes } #, :status => :unprocessable_entity
+      format.xml  { render :xml => @change }
+    end
+  end
+
+  def base_versions
+    @app = App.find(params[:app_id])
+    
+    if params[:schema] && params[:db_type] 
+      repos_tools = Brazil::DeploySourceTools.new
+      repos_tools.configure(
+        ::AppConfig.vc_type, 
+        ::AppConfig.vc_uri, 
+        @app.vc_path + "/#{params[:schema]}/#{params[:db_type]}", 
+        ::AppConfig.vc_read_user, 
+        ::AppConfig.vc_read_password, 
+        ::AppConfig.vc_dir)
+        
+      repos_tools.init_src
+      @base_versions = repos_tools.find_versions
+      puts "hej"
+    else
+      @base_versions = []
+    end
+    
+    puts @base_versions.inspect
+    
+    respond_to do |format|
+      format.html { render :layout =>  false } 
+      format.xml  { render :xml => @base_versions }
+    end
+  end 
 
   private
 

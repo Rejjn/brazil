@@ -1,8 +1,7 @@
 
-require 'brazil/version_control_tools'
+require 'brazil/version_control'
 
 class Change < ActiveRecord::Base
-  STATE_SUGGESTED = 'suggested'
   STATE_SAVED = 'saved'
   STATE_EXECUTED = 'executed'
 
@@ -38,36 +37,13 @@ class Change < ActiveRecord::Base
   end
 
   def to_s
-    id.to_s
-  end
-
-  def suggested?
-    (state == STATE_SUGGESTED)
-  end
-
-  def valid_email?(email)
-    TMail::Address.parse(email) && /@/.match(email)
-  rescue
-    false
-  end
-
-  validates_each :developer do |record, attr, value|
-    record.errors.add(:developer, "entry must be a valid email") unless record.valid_email?(value)
-  end
-
-  validates_each :dba do |record, attr, value|
-    if !record.suggested? && !record.valid_email?(value)
-      record.errors.add(:dba, "entry must be a valid email")
-    end
+    "change ##{id.to_s}"
   end
 
   private
 
   def db_instance_dev
-    activity.db_instances.each do |db_instance|
-      return db_instance if db_instance.dev?
-    end
-
+    return activity.db_instance if activity.db_instance.dev?
     raise Brazil::NoDBInstanceException, "#{activity} has no #{DbInstance::ENV_DEV} database instance set. Use Edit Activity to set one."
   end
 

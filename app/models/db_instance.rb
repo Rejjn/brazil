@@ -1,15 +1,15 @@
 require 'brazil/schema_revision'
-require 'brazil/database_tools'
+require 'brazil/database_schema'
 
 class DbInstance < ActiveRecord::Base
   ENV_DEV = 'dev'
   ENV_TEST = 'test'
   ENV_PROD = 'prod'
 
-  TYPE_MYSQL = Brazil::DatabaseTools::TYPE_MYSQL
-  TYPE_ODBC = Brazil::DatabaseTools::TYPE_ODBC
-  TYPE_ORACLE = Brazil::DatabaseTools::TYPE_ORACLE
-  TYPE_POSTGRES = Brazil::DatabaseTools::TYPE_POSTGRES
+  TYPE_MYSQL = Brazil::DatabaseSchema::TYPE_MYSQL
+  TYPE_ODBC = Brazil::DatabaseSchema::TYPE_ODBC
+  TYPE_ORACLE = Brazil::DatabaseSchema::TYPE_ORACLE
+  TYPE_POSTGRES = Brazil::DatabaseSchema::TYPE_POSTGRES
 
   validates_presence_of :db_alias, :host, :port, :db_env, :db_type
 
@@ -37,27 +37,40 @@ class DbInstance < ActiveRecord::Base
     db_alias
   end
 
-  def execute_sql(sql, username, password, schema)
-    db_tools = Brazil::DatabaseTools.new
-    db_tools.configure(host, port, db_type, schema, username, password)
-
-    db_tools.execute_sql(sql)
+  def deploy_update(app, app_schema, username, password, schema, target_version) 
+    db = Brazil::DatabaseSchema.new(host, port, db_type, schema, username, password)
+    asvc = Brazil::AppSchemaVersionControl.new(:vc_type => Brazil::AppSchemaVersionControl::TYPE_SUBVERSION, :vc_path => app.vc_path, :vc_uri => ::AppConfig.vc_uri, :vc_tmp_dir => ::AppConfig.vc_dir)
+    
+    db.update_to_version(asvc, app_schema, target_version)
   end
 
-  # kind can be either :current or :next
-  def find_currently_deployed_schema_version(username, password, schema)
-    db_tools = Brazil::DatabaseTools.new
-    db_tools.configure(host, port, db_type, schema, username, password)
+  def deploy_rollback(app, app_schema, username, password, schema, target_version)
+    db = Brazil::DatabaseSchema.new(host, port, db_type, schema, username, password)
+    asvc = Brazil::AppSchemaVersionControl.new(:vc_type => Brazil::AppSchemaVersionControl::TYPE_SUBVERSION, :vc_path => app.vc_path, :vc_uri => ::AppConfig.vc_uri, :vc_tmp_dir => ::AppConfig.vc_dir)
+    
+    db.rollback_to_version(asvc, app_schema, target_version)
+  end
 
-    db_tools.find_currently_deployed_schema_version
+  def execute_sql(sql, username, password, schema)
+    db = Brazil::DatabaseSchema.new(host, port, db_type, schema, username, password)
+    db.execute_sql(sql)
+  end
+
+  def deployed_versions(username, password, schema) 
+    db = Brazil::DatabaseSchema.new(host, port, db_type, schema, username, password)
+    db.version_information    
+  end
+
+  def wipe_schema(username, password, schema) 
+    serenity_api = Brazil::SerenityIntegration.new
+    serenity_api.wipe_schema(db_type, :schema => schema, :port => port)   
   end
 
   def check_db_credentials(username, password, schema)
-    db_tools = Brazil::DatabaseTools.new
-    db_tools.configure(host, port, db_type, schema, username, password)
-
-    return db_tools.check_db_credentials
+    db = Brazil::DatabaseSchema.new(host, port, db_type, schema, username, password)
+    return db.check_db_credentials
   end
 
   private
+  
 end

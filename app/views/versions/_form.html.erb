@@ -1,8 +1,11 @@
 <%= render :partial => 'shared/form_error', :locals => {:f => f} %>
+
+<%= hidden_field_tag 'version[schema]', f.object.activity.schema %>
+
 <div>
   <p>
     <%= f.label :update_sql, 'Update SQL' %><br />
-    <%= f.text_area :update_sql, :class => 'span-23 sql' %>
+    <%= f.text_area :update_sql, :class => 'span-23 sql last' %>
   </p>
 </div>
 
@@ -10,30 +13,34 @@
 
 <div>
   <div class="span-11 colborder">
-      <%= f.label :preparation %><br />
+      <%= f.label :preparation, 'Preperation (human readable)' %><br />
       <%= f.text_area :preparation, :class => 'span-11' %>
   </div>
   <div class="span-11 last">
       <%= f.label :rollback_sql, 'Rollback SQL' %><br />
-      <%= f.text_area :rollback_sql, :class => 'span-11' %>
+      <%= f.text_area :rollback_sql, :class => 'span-11 last' %>
   </div>
 </div>
 
-<%= hidden_field_tag 'version[schema]', f.object.activity.schema %>
-
-<% unless f.object.new_record? %>
-  <hr class="space" />
-  <hr />
+<hr class="space" />
+<hr />
   
-  <div>
-    <div>
-      <%= label_tag :schema_version, 'Schema Version' %><br />
-      <%= text_field_tag 'schema_version_major', f.object.schema_revision.major, :size => 2 %> .
-      <%= text_field_tag 'schema_version_minor', f.object.schema_revision.minor, :size => 2 %> .
-      <%= text_field_tag 'schema_version_patch', f.object.schema_revision.patch, :size => 2 %>
-    </div>
+<div>
+  <div class="span-5">
+    <%= label_tag :schema_version, 'Schema Version Type' %><br />
+    <%= select_tag(:version_bump, options_for_select([['-- Select --', ''], ['Major', :major], ['Minor', :minor], ['Patch', :patch]])) %>
   </div>
-<% end %>
+  
+  <div class="span-5">  
+    <strong>Current latest</strong><br>
+    <span class="latest_version">1.7.2</span>
+  </div>
+  
+  <div class="span-5 last">  
+    <strong>Assigned version for this Activity</strong><br>
+    <span class="assigned_version"></span>
+  </div>
+</div>
 
 <hr class="space" />
 <hr />

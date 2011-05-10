@@ -2,42 +2,58 @@
   <div class="clearfix">
     <h2>Version</h2>
 
-    <div class="span-24 last">
+    <div class="span-23 last">
       <h3><%=h version %></h3>
     </div>
       
     <div class="span-5">
+      <span><strong>State</strong> <%=h version.state %></span>
+      <br>
       <span class="date">Last changed <%=h time_ago_in_words(version.updated_at) %> ago</span>
     </div>
 
-    <div class="info span-5">
-      <span><strong>Version</strong> <%=h version.schema_version %></span>
-      <span><strong>State</strong> <%=h version.state %></span>
-    </div>
+    <div class="span-10"> 
+      <div class="span-5 info">
+        <span><strong>Schema</strong> <%=h version.schema %></span>
+      </div>
+  
+      <div class="span-5 info last">
+        <span><strong>Version</strong> <%=h version.schema_version %></span>
+      </div>
 
-    <div class="info span-5">
-      <% version.db_instances.each do |db_instance| %>
-      <span class="db"><strong><%=h db_instance.db_env.capitalize %> DB</strong> <%=h db_instance %></span>
-      <% end %>
-      <span><strong>Schema</strong> <%=h version.schema %></span>
-    </div>
+      <div class="span-10 info last">
+        <br><h4>Tested</h4>
+        <div class="span-5 info">
+          <span><strong>Update</strong> <%= image_tag '/images/tick.png', :class => 'version_test_status' %></span>
+        </div>
+        <div class="span-5 info last">
+          <span><strong>Rollback</strong> <%= image_tag '/images/cross.png', :class => 'version_test_status' %></span>
+        </div>
+      </div>
 
-    <% if version_tested(version) %>
-    <div class="span-2">
-      <% form_for(version, :url => deploy_app_activity_version_path(version.activity.app, version.activity, version)) do |f| %>
-        <%= f.hidden_field :state, :value => Version::STATE_DEPLOYED %>
-        <%= f.submit 'Deployed' %>
-      <% end %>
-    </div>
-    <% end %>
+      <div class="span-10 info last">
+        <br><h4>Deployed</h4>
+        <div class="span-5 last">
+          <span><strong>Source repos:</strong> <%= image_tag '/images/cross.png', :class => 'version_test_status' %></span>
+        </div>
+        <div class="span-5 info last">
+          <span><strong>Production env:</strong> <%= image_tag '/images/cross.png', :class => 'version_test_status' %></span> 
+        </div>
+     </div>        
+   </div>
 
-    <div class="append-1">
+    <div class="span-8 last">
       <ul class="actions">
         <li><%= link_to 'Show', app_activity_version_path(version.activity.app, version.activity, version) %></li>
         <% if version_created(version) %>
-        <li><%= link_to 'Edit', edit_app_activity_version_path(version.activity.app, version.activity, version) %></li>
-        <li class="destroy"><%= link_to 'Delete', delete_app_activity_version_path(version.activity.app, version.activity, version) %></li>
+          <li><%= link_to 'Edit', edit_app_activity_version_path(version.activity.app, version.activity, version) %></li>
+          <li class="destroy"><%= link_to 'Delete', delete_app_activity_version_path(version.activity.app, version.activity, version) %></li>
         <% end %>
+          <%# if version_tested(version) %>
+          <br class="clear"><br>
+          <ul class="actions">
+            <li class="attention"><%= link_to 'Deployed', edit_app_activity_version_path(version.activity.app, version.activity, version) %></li>
+          <%# end %>
       </ul>
     </div>
   </div>

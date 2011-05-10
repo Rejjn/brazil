@@ -1,9 +1,12 @@
 <%= render :partial => 'shared/form_error', :locals => {:f => f} %>
 <p>
   <%= f.label :name, 'App Name' %><br />
-  <%= f.text_field :name, :class => 'span-10' %>
+  <%= f.text_field :name, :class => 'span-4' %>
 </p>
 <p>
   <%= f.label :vc_path, 'Version Control Path (ex. /app_name/trunk/db)' %><br />
-  <span><%=h vc_uri %></span> <%= f.text_field :vc_path, :class => 'span-5' %>
+  <iframe id="repo_browser" src="/repo_browser/" width="375" height="200" frameBorder="0" onload="brazil.repo_browser.set_url();">
+    <p>Your browser does not support iframes.</p>
+  </iframe>
+  <%= f.text_field :vc_path, :class => 'span-10' %>
 </p>

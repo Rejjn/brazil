@@ -1,19 +1,22 @@
 <%= render :partial => 'shared/form_error', :locals => {:f => f} %>
 <p>
-  <span><strong>App</strong> <%=h app %></span>
+  <span><strong>App</strong><br /> <%=h app %></span>
 </p>
 <p>
   <%= f.label :name, 'Activity (CR, Project, etc.)' %><br />
-  <%= f.text_field :name, :class => 'span-10' %>
+  <%= f.text_field :name, :class => 'span-6' %>
 </p>
 <p>
-  <%= f.label :description %><br />
+  <%= f.label :description, 'Description (used for the schema version table)' %> <br />
   <%= f.text_area :description, :class => 'span-10' %>
 </p>
 <div class="span-10 last">
   <div class="span-5">
-    <%= f.label "db_instance_ids", "Dev Database" %><br />
+    <%= f.label "db_instance_id", "Schema type" %><br />
     <%= f.select :db_type, DbInstance.db_types, {:include_blank => '-- Select --'}, {:class => 'span-5'} %>
+    
+    <%= f.label "base_version" %><br />
+    <%= f.select :base_version, ['[select type & schema]'], {:include_blank => '-- Select --'}, {:class => 'span-5'} %>
   </div>
 
   <div class="span-5 last">
@@ -25,16 +28,16 @@
 <hr class="space" />
 
 <div class="span-10 last">
+  <h4>Development</h4>
+  
   <div class="span-5">
-    <%= f.label "db_instance_ids", "Dev Database" %><br />
-    <%= f.collection_select :db_instance_ids, DbInstance.env_dev, :id, :to_s, {:include_blank => '-- Select --'}, {:class => 'span-5'} %>
+    <%= f.label "db_instance_ids", "Dev Database Instance" %><br />
+    <%= f.collection_select :db_instance_id, DbInstance.env_dev, :id, :to_s, {:include_blank => '-- Select --'}, {:class => 'span-5'} %>
   </div>
   <div class="span-5 last">
-    <%= f.label :schema, 'Dev Database Schema' %><br />
+    <%= f.label :schema, 'Dev Schema Name' %><br />
     <%= f.text_field :dev_schema, :class => 'span-5' %>
   </div>
-  
-  <hr class="space" />
   
   <div class="span-5">
     <%= f.label :schema, 'Dev User' %><br />
@@ -42,7 +45,7 @@
   </div>
   <div class="span-5 last">
     <%= f.label :schema, 'Dev Password' %><br />
-    <%= f.text_field :dev_password, :class => 'span-5' %>
+    <%= f.password_field :dev_password, :class => 'span-5' %>
   </div>
 </div>
 

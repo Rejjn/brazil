@@ -1,33 +1,56 @@
 <div id="activity" class="box activity <%=h activity.state %> showgrid clearfix">
   <h2>Activity</h2>
 
-  <div class="span-24 last">
+  <div class="span-23 last">
     <div class="head">
-      <h3><%=h activity %></h3><% if activity_show_dev_actions(activity) %><%= link_to 'edit', edit_app_activity_path(activity.app, activity), :id => 'activity_edit_button' %><% end %>
+      <h3><%=h activity %></h3>
+      <% if activity_show_dev_actions(activity) %>
+        <%= link_to 'edit', edit_app_activity_path(activity.app, activity), :id => 'activity_edit_button' %>
+      <% end %>
     </div>
   </div>
+
+  <div class="span-23 info last">  
+    <div class="span-5">
+      <span><strong>App</strong> <%=h activity.app %></span>
+      <span class="state"><strong>State</strong> <%=h activity.state %></span>
+      </br/>
+      <span>Last changed <%=h time_ago_in_words(activity.updated_at) %> ago</span>
+    </div>
   
-  <div class="span-5">
-    <span>Last changed <%=h time_ago_in_words(activity.updated_at) %> ago</span>
-  </div>
-
-  <div class="info span-5">
-    <span><strong>App</strong> <%=h activity.app %></span>
-    <span class="state"><strong>State</strong> <%=h activity.state %></span>
-    <span class="db_type"><strong>DB Type</strong> <%=h activity.db_type %></span>
-    <span class="schema"><strong>Schema</strong> <%=h activity.schema %></span>
-  </div>
-
-  <div class="info span-5">
-    <% activity.db_instances.each do |db_instance| %>
-    <span class="db"><strong><%=h db_instance.db_env.capitalize %> DB</strong> <%=h db_instance %></span>
-    <% end %>
-    <span class="dev_schema"><strong>Dev Schema</strong> <%=h activity.dev_schema %></span>
-    <span class="dev_user"><strong>Dev User</strong> <%=h activity.dev_user %></span>
-    <span class="dev_password"><strong>Dev Password</strong> <%=h activity.dev_password %></span>
-  </div>
-
-  <div class="append-1">
-    <%= render :partial => "activity", :locals => {:activity => activity} %>
+    <div class="span-12 last">
+      <div class="span-12">
+        <h4>Schema</h4>
+      </div>
+          
+      <div class="span-6 info">
+        <span class="schema"><strong>Schema</strong> <%=h activity.schema %></span>
+        <span class="base_version attribute_warning" title="Repository has a newer version, you should consider changing base version"><strong>Base version</strong> 1.7.2</span>
+      </div>
+      
+      <div class="span-6 info last">
+        <span class="db_type"><strong>DB Type</strong> <%=h activity.db_type %></span>
+      </div>    
+      
+      <% if activity.state == Activity::STATE_DEVELOPMENT %>
+        <div class="span-12 last">
+          <br>
+          <h4>Development</h4>
+        </div>
+         
+        <div class="span-6 info">
+          <span class="db attribute_warning" title="This database does not exist"><strong>DB Instance</strong> <%=h activity.db_instance %></span>
+          <span class="dev_user"><strong>User</strong> <%=h activity.dev_user %></span>
+        </div>
+        <div class="span-6 info last">
+          <span class="dev_schema"><strong>Schema</strong> <%=h activity.dev_schema %></span>
+        </div>
+      <% end %>
+              
+      </div>
+  
+    <div class="span-6 last">
+      <%= render :partial => "activities/activity", :locals => {:activity => activity} %>
+    </div>
   </div>
 </div>

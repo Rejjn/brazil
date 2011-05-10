@@ -2,6 +2,19 @@ $(document).ready(function() {
   brazil.manipulate.syntax_highlight();
   brazil.move.scrollable('#activity_forms');
 
+  jQuery.each(jQuery('.attribute_warning'), function(index, value) {
+    brazil.warning.show(jQuery(value))
+  });
+  
+  brazil.flash.fadeout('#notice', 3000);
+  
+  brazil.element.show({ 
+    link_html: '<a href="#">Show SQL</a>', 
+    button_html: '<span style="float: right;"></span>', 
+    to_show: jQuery('#deployed_sql'), 
+    button_container: jQuery('#deployed_sql').parent(), 
+  });  
+
   // Edit Activity
   brazil.form.inline({
     show_form: '#activity_edit_button',
@@ -16,28 +29,19 @@ $(document).ready(function() {
     form_container: '#new_change_fieldset',
     response_container: '#changes',
     success: function() {
-      brazil.manipulate.syntax_highlight();
       brazil.flash.notice();
       brazil.sql.show();
     },
     error: function() {
+      brazil.flash.error();
       brazil.sql.show();
-    }
-  });
-
-  // Suggest Change
-  brazil.form.insert({
-    show_form: '#suggest_change_button',
-    form_container: '#activity_forms',
-    inserted_fieldset: '#suggest_change_fieldset',
-    response_container: '#changes',
-    success: function() {
+    },
+    done: function() {
       brazil.manipulate.syntax_highlight();
-      brazil.flash.notice();
-    }
+    },
   });
 
-  // Edit / Approve Change
+  // Edit Change
   brazil.form.insert({
     show_form: '.edit_change_button',
     form_container: '#activity_forms',
@@ -48,16 +52,42 @@ $(document).ready(function() {
       brazil.flash.notice();
     }
   });
+  
+  // Execute Change
+  brazil.request.execute({
+    button: '.execute_change_button',
+    method: 'GET',
+    response_container: '#changes',
+    success: function() {
+      brazil.flash.notice('#change_notice');
+      brazil.sql.show();
+    },
+    error: function() {
+      brazil.flash.error('#change_error');
+      brazil.sql.show();
+    },
+    done: function() {      
+      brazil.manipulate.syntax_highlight();
+    }
+  });
+  
+  // Execute Activity
+  brazil.request.execute({
+    button: '.execute_activity_button',
+    method: 'GET',
+    response_container: '#changes',
+    success: function() {
+      brazil.flash.notice();
+      brazil.sql.show();
+    },
+    error: function() {
+      brazil.flash.error();
+      brazil.sql.show();
+    },
+    done: function() {      
+      brazil.manipulate.syntax_highlight();
+    }
+  });
+  
 });
-
-function sql_show_controls(){
-  if ($("#deployed_sql").is(":hidden")) {
-    $("#deployed_sql").slideDown("slow");
-    $("#sql_show_controls").html("Hide SQL");
-  }
-  else {
-    $("#deployed_sql").slideUp();
-    $("#sql_show_controls").html("Show SQL");
-  }
-}
 

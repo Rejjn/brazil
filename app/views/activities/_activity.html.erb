@@ -1,6 +1,10 @@
 <% if activity_show_dev_actions(activity) %>
 <ul class="actions">
-  <li class="destroy"><%= link_to 'Create Version', new_app_activity_version_path(activity.app, activity), :id => 'create_version_button' %></li>
-  <li><%= link_to 'Suggest Change', new_app_activity_change_suggestion_path(activity.app, activity), :id => 'suggest_change_button' %></li>
+  <li><%= link_to 'Create Version', new_app_activity_version_path(activity.app, activity), :class => 'create_version_button' %></li>
+  <li><%= link_to 'Execute', execute_app_activity_path(activity.app, activity), :class => 'execute_activity_button' %></li>
+</ul>
+<br class="clear"><br>
+<ul class="actions">
+  <li class="destroy nomargin"><%= link_to 'Delete', app_activity_path(activity.app, activity), :class => 'delete_activity_button', :confirm =>  delete_warning_text(activity), :method => :delete %></li>  
 </ul>
 <% end %>

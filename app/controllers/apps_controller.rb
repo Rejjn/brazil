@@ -97,6 +97,39 @@ class AppsController < ApplicationController
       end
     end
   end
+  
+  def delete
+    @app = App.find(params[:id])
+
+    respond_to do |format|
+      format.html
+      format.xml  { head :ok }
+    end
+  end
+
+  # DELETE /db_deploys/1
+  # DELETE /db_deploys/1.xml
+  def destroy
+    @app = App.find(params[:id])
+    
+    if params[:app_delete_cancel]
+      redirect_to apps_url
+      return
+    end
+
+    respond_to do |format|
+      if @app.destroy
+        format.html do
+          flash[:notice] = "App '#{@app}' successfully deleted"
+          redirect_to apps_url
+        end
+        format.xml  { head :ok }
+      else
+        format.html { render :action => 'delete' }
+        format.xml  { render :xml => @app.errors, :status => :unprocessable_entity }
+      end
+    end
+  end
 
   private
 

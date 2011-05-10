@@ -1,1 +1,0 @@
-$.getScript('/javascripts/db_deploys/deploy_update.js');

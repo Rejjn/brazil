@@ -4,13 +4,12 @@ class Activity < ActiveRecord::Base
   STATE_DEPLOYED = 'deployed'
 
   belongs_to :app
-  has_many :versions
-  has_many :changes, :order => "created_at DESC"
+  has_many :versions, :dependent => :destroy
+  has_many :changes, :order => "created_at ASC", :dependent => :destroy
 
-  has_many :db_instance_activity
-  has_many :db_instances, :through => :db_instance_activity
+  belongs_to :db_instance
 
-  validates_associated :db_instances
+  validates_associated :db_instance
   validates_presence_of :name, :schema, :dev_schema
 
   # FIXME: Add before_save check state

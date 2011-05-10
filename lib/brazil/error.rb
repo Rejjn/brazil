@@ -14,7 +14,11 @@ module Brazil
   class NoVersionTableException < DBException; end
   class InvalidTargetVersionException < DBException; end
   
+  class ArgumentException < Error; end
+  
   class RemoteAPIException < Error; end
 
   class VersionControlException < Error; end
+    
+  class AppSchemaVersionControlException < Error; end
 end
