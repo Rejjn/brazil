@@ -1,0 +1,7 @@
+<ul class="actions">
+  <li><%= link_to 'New DB Deployment', new_db_deploy_path %></li>
+</ul>
+
+<h2>Database Deployments - Development & Test</h2>
+<%= render :partial => 'table', :locals => {:db_instances => @db_instances} %>
+

@@ -1,0 +1,43 @@
+<%= render :partial => 'shared/form_error', :locals => {:f => f} %>
+
+<div class="span-5">
+   <%= f.label 'Database Instance' %><br />
+   <select id="db_deploy_db_instance_id" name="db_deploy[db_instance_id]">
+    <%= grouped_options_for_select(@grouped_db_instances, @db_deploy.db_instance_id) %> 
+  </select>
+</div>
+
+<hr class="space" />
+
+<div class="span-5">
+  <%= f.label 'Schema' %><br />
+  <%= f.text_field :db_schema, :class => 'span-5' %>
+</div>
+<div class="span-8 last">
+  <%= f.label 'Serenity Database' %><br />
+  <%= f.check_box :serenity_db, :class => 'span-5' %>
+</div>
+
+<hr class="space" />
+
+<div class="span-5">
+  <%= f.label 'Datase User' %><br />
+  <%= f.text_field :db_user, :class => 'span-5' %>
+</div>
+<div class="span-8 last">
+  <%= f.label 'Database Password' %><br />
+  <%= f.text_field :db_password, :class => 'span-5' %>
+</div>
+
+<hr class="space" />
+
+<div class="span-2">
+  <%= f.label 'Source Type' %><br />
+  <%= f.select(:src_type, DbDeploy.source_types) %>
+</div>
+<div class="span-16 last">
+  <%= f.label 'Source Path' %><br />
+  <%=h vc_uri %> <%= f.text_field :src_path, :class => 'span-8' %>
+</div>
+
+<hr class="space" />

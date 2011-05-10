@@ -1,0 +1,19 @@
+<div id="app" class="box app clearfix">
+  <h2>App</h2>
+
+  <div class="span-23 last">
+    <div class="head">
+      <h3><%=h app %></h3>
+    </div>
+  </div>
+
+  <div class="span-23 info last">  
+    <div class="span-5">
+      <span>Last changed <%=h time_ago_in_words(app.updated_at) %> ago</span>
+    </div>
+  
+    <div class="span-15 info last">
+      <span class="vc"><strong>Version control path</strong> <%=h app.vc_path %></span>
+    </div>
+  </div>
+</div>

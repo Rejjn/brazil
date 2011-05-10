@@ -1,0 +1,20 @@
+<% 
+	repo_css = stylesheet_link_tag "blueprint/print", "brazil/print", :media => "print" 
+  repo_css << stylesheets
+	@repo_page.gsub!(/\<\/head\>/, "#{repo_css}</head>")
+
+	# <hr noshade><em>Powered by <a href="http://subversion.tigris.org/">Subversion</a> version 1.5.2 (r32768).</em>
+	@repo_page.gsub!(/\<hr .*\<\/em\>/, '')
+
+	# <h2>repos - Revision 93543: /</h2>
+	@repo_page.gsub!(/\<h2\>.*<\/h2>/, '')
+
+	# <a href=".../">arch/</a>
+	@repo_page.gsub!(/href\=\"\.\.\/\"/, 'href="?url=' + params[:url].gsub(/\/[\w\d_\-\.]+$/, '') + '"')
+
+	# <a href="arch/">arch/</a>
+	@repo_page.gsub!(/href\=\"([\w_\.\-\d]+)\/\"/, 'href="?url=' + params[:url] + '/\1"')
+
+%>
+
+<%= @repo_page %>

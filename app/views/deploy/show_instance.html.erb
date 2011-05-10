@@ -1,0 +1,14 @@
+<%= render :partial => 'header' %>
+
+<%= render :partial => 'app' %>
+<%= render :partial => 'schema' %>
+<%= render :partial => 'db_instance' %>
+
+<% if session[:db_credentials] %>
+  <%= render :partial => 'credentials' %>
+  <div id="deployment" class="span-24 last">
+    <%= render :partial => 'deploy_fieldset' %>
+  </div>
+<% else %>
+  <%= render :partial => 'credentials_fieldset' %>
+<% end %>

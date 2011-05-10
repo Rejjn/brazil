@@ -1,0 +1,15 @@
+body {
+  font-size: 0.8em;
+}
+
+h2 {
+  font-size: 1em;
+}
+
+ul {
+  padding-left: 10px;
+}
+
+li {
+  list-style: none;
+}

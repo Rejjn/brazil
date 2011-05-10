@@ -1,0 +1,26 @@
+<div id="db_instance" class="box db_instance prod clearfix">
+  <h2>Database instance</h2>
+
+  <div class="span-23 last">
+    <div class="head">
+      <h3><%=h db_instance %></h3>
+    </div>
+  </div>
+
+  <div class="span-23 info last">  
+    <div class="span-5">
+      <span>Created <%=h time_ago_in_words(db_instance.created_at) %> ago</span>
+    </div>
+
+    <div class="span-5 info">
+      <span class="alias"><strong>Alias</strong> <%=h db_instance.db_alias %></span>
+      <span class="host"><strong>Host</strong> <%=h db_instance.host %></span>
+      <span class="port"><strong>Port</strong> <%=h db_instance.port %></span>
+    </div>
+  
+    <div class="span-5 info last">
+      <span class="environment"><strong>Environment</strong> <%=h db_instance.db_env %></span>
+      <span class="type"><strong>Type</strong> <%=h db_instance.db_type %></span>
+    </div>
+  </div>
+</div>

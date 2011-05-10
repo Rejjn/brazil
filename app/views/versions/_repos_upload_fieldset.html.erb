@@ -1,0 +1,9 @@
+<fieldset>
+  <legend>Source repository upload</legend>
+  <div><strong>Deployed</strong> <%= image_tag '/images/cross.png', :class => 'version_test_status' %></div>
+  
+  <div>
+      <%= render :partial => 'shared/vc_credentials_form' %>
+      <br /><%= submit_tag 'Upload', :class => 'execute_button' %>
+  </div>
+</fieldset>

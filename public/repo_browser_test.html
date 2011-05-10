@@ -1,0 +1,21 @@
+<html><head><title>repos - Revision 93543: /</title>
+  <script src="/javascripts/jquery/jquery-1.3.2.min.js?1285572092" type="text/javascript"></script>
+</head>
+<body>
+  <script>
+    function set_repo_browser_url() {
+      var url_arr = $($('#repo_browser').attr('contentDocument')).attr('documentURI').split('?');
+      var url = url_arr[1].split('='); 
+      $('#repos_url').val(url[1]);
+    }
+  </script>
+  
+  <iframe id="repo_browser" src="repo_browser/" width="400" height="300" frameBorder="0" 
+    onload="set_repo_browser_url();">
+    <p>Your browser does not support iframes.</p>
+  </iframe>
+  
+  <input type="text" id="repos_url" name="repos_url" value="/"/>
+  
+  
+</body></html>

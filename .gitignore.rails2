@@ -1,0 +1,12 @@
+
+tmp
+log/*.log
+
+db/*.sqlite3
+
+config/database.yml
+
+.DS_Store
+/clean.xml.1
+/clean.xml
+/app/views/db_deploys/.tmp_show.html.erb.86616~

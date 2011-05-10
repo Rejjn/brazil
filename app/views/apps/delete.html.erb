@@ -1,0 +1,38 @@
+<fieldset class="delete">
+  <legend>Delete Apps</legend>
+
+  <h3>Are you sure you want to delete this App?</h3>
+  <hr class="space" />
+
+  <%= render :partial => 'shared/app', :locals => { :app => @app } %>
+
+  <% if @app.activities.count > 0 %>
+    <h4>Deleting this app will also delete:</h4>
+    <div id="app-list" class="span-14 last">
+      <div class="app">
+        <table class="activity-list">
+          <thead>
+            <tr>
+              <th>Activity</th>
+              <th>Schema</th>
+              <th>Description</th>
+              <th>State</th>
+            </tr>
+          </thead>
+  
+          <%= render :partial => 'shared/activity_row', :collection => @app.activities, :as => :activity %>
+          <% reset_cycle('activity_cycle') %>
+  
+        </table>
+      </div>
+    </div>
+    
+    <br class="clear"/>
+  <% end %>
+  
+  <% form_for(@app, :url => app_path(@app), :html => {:method => :delete}) do |f| %>
+    <%= render :partial => 'shared/form_error', :locals => {:f => f} %>
+    <%= f.submit 'Delete App' %>
+    <%= f.submit 'Cancel', :id => 'app_delete_cancel', :name => 'app_delete_cancel' %>
+  <% end %>
+</fieldset>

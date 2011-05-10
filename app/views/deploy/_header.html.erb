@@ -1,0 +1,6 @@
+<h2>Deploy Database</h2>
+
+<div>
+  <strong>Select app:</strong>
+  <%= select_tag "app", '<option>-- Select --</option>' + options_from_collection_for_select(@apps, "id", "name", params[:app].to_i), :class => 'deploy_app' %>
+</div>
