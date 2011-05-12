@@ -1,7 +1,7 @@
 <fieldset>
   <legend>New Database Deployment </legend>
 
-  <% form_for(@db_deploy) do |f| %>
+  <%= form_for(@db_deploy) do |f| %>
    	<%= render :partial => 'form', :locals => {:f => f} %>
     
     <p>

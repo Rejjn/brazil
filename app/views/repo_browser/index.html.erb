@@ -1,5 +1,6 @@
 <% 
-	repo_css = stylesheet_link_tag "blueprint/print", "brazil/print", :media => "print" 
+	repo_css = ""	
+	repo_css << stylesheet_link_tag("blueprint/print", "brazil/print", :media => "print")
   repo_css << stylesheets
 	@repo_page.gsub!(/\<\/head\>/, "#{repo_css}</head>")
 
@@ -17,4 +18,4 @@
 
 %>
 
-<%= @repo_page %>
+<%=raw @repo_page %>

@@ -13,8 +13,8 @@ class DbInstance < ActiveRecord::Base
 
   validates_presence_of :db_alias, :host, :port, :db_env, :db_type
 
-  named_scope :env_test, :conditions => {:db_env => ENV_TEST}
-  named_scope :env_dev, :conditions => {:db_env => ENV_DEV}
+  scope :env_test, :conditions => {:db_env => ENV_TEST}
+  scope :env_dev, :conditions => {:db_env => ENV_DEV}
 
   def self.db_environments
     [ENV_DEV, ENV_TEST, ENV_PROD]

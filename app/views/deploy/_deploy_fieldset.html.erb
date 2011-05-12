@@ -89,7 +89,7 @@
       <div class="span-11">
         <fieldset id="deploy_update_fieldset">
           <legend>Update</legend>        
-            <% form_tag(update_instance_schema_app_deploy_path(), :method => :post) do %>
+            <%= form_tag(update_instance_schema_app_deploy_path(), :method => :post) do %>
               <p>
                 <%= label_tag 'Target version' %><br />
                 <%= select_tag(:target_version, options_for_select(@update_versions)) %>
@@ -104,7 +104,7 @@
         <div class="span-11 last">
           <fieldset id="deploy_rollback_fieldset">
             <legend>Rollback</legend>        
-            <% form_tag(rollback_instance_schema_app_deploy_path(), :method => :post) do %>
+            <%= form_tag(rollback_instance_schema_app_deploy_path(), :method => :post) do %>
               <p>
                 <%= label_tag 'Target version' %><br />
                 <%= select_tag(:target_version, options_for_select(@rollback_versions)) %>
@@ -117,7 +117,7 @@
           </fieldset>
           <fieldset id="deploy_wipe_fieldset">
             <legend>Wipe schema</legend>            
-            <% form_tag(wipe_instance_schema_app_deploy_path(), :method => :post) do %>
+            <%= form_tag(wipe_instance_schema_app_deploy_path(), :method => :post) do %>
               <p>
                 <%= submit_tag 'Wipe schema', :class => 'clean_button wipe_schema_button' %>
               </p>

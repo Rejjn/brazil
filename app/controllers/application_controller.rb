@@ -4,8 +4,6 @@ class ApplicationController < ActionController::Base
   
   protect_from_forgery
   
-  filter_parameter_logging :password, :db_password
-
   add_crumb 'Home', '/'
 
   before_filter :add_controller_crumbs, :except => :destroy

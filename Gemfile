@@ -5,7 +5,16 @@ gem 'rails', '3.0.7'
 # Bundle edge Rails instead:
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
 
-gem 'mysql2'
+gem 'mysql2', '0.2.7'
+gem 'rails-dbi', :require => 'dbi'
+gem 'ruby-oci8'
+gem 'crummy', '>= 1.0.1'
+gem 'net-ldap'
+gem 'rio', '0.4.4'
+gem 'httpclient'
+gem 'cobravsmongoose'
+
+gem 'test-unit', '1.2.3'
 
 # Use unicorn as the web server
 # gem 'unicorn'

@@ -86,7 +86,7 @@
       <div class="span-11">
         <fieldset>
           <legend>Update</legend>        
-            <% form_tag(deploy_update_db_deploy_path(@db_deploy), :method => :put) do %>
+            <%= form_tag(deploy_update_db_deploy_path(@db_deploy), :method => :put) do %>
               <p>
                 <%= label_tag 'Target version' %><br />
                 <%= select_tag(:target_version, options_for_select(@update_versions)) %>

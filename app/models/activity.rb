@@ -14,7 +14,7 @@ class Activity < ActiveRecord::Base
 
   # FIXME: Add before_save check state
 
-  named_scope :latest, lambda { |limit| {:order => 'updated_at DESC', :limit => limit} }
+  scope :latest, lambda { |limit| {:order => 'updated_at DESC', :limit => limit} }
 
   def development!
     update_attribute(:state, STATE_DEVELOPMENT)

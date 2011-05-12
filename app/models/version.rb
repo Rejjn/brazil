@@ -196,6 +196,7 @@ class Version < ActiveRecord::Base
   end
 
   def check_no_duplicate_schema_db
+    #TODO
     match = DbInstanceVersion.find(:first, :joins => [:version, :db_instance], :conditions => ['versions.schema = ? AND db_instances.id = ? AND versions.activity_id = ?', schema, db_instance_test.id, activity.id])
     if match && match.version_id != id
       errors.add_to_base("Creating a second Version with the same Schema '#{schema}' and Test Database '#{db_instance_test}' is not allowed")

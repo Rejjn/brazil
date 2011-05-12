@@ -24,7 +24,7 @@
     </tr>
   </table>
 
-  <% form_for(@db_instance, :url => db_instance_path(@db_instance), :html => {:method => :delete}) do |f| %>
+  <%= form_for(@db_instance, :url => db_instance_path(@db_instance), :html => {:method => :delete}) do |f| %>
     <%= render :partial => 'shared/form_error', :locals => {:f => f} %>
     <%= f.submit 'Delete Database Instance' %>
     <%= f.submit 'Cancel', :id => 'db_instance_delete_cancel', :name => 'db_instance_delete_cancel' %>

@@ -63,11 +63,20 @@ Brazil::Application.routes.draw do
   end
 
   resources :apps do
+    member do
+      get :delete
+    end
+    
     resources :activities do
+      member do
+        get :delete
+        post :execute
+      end
+      
       resources :changes do
         member do
           get :delete
-          get :execute
+          post :execute
         end
       end
 
@@ -91,6 +100,7 @@ Brazil::Application.routes.draw do
   match 'deploy/:app/:schema' => 'deploy#show_schema', :as => :schema_app_deploy
   match 'deploy/:app' => 'deploy#show_app', :as => :app_deploy
   match 'deploy' => 'deploy#index', :as => :deploy
+  match 'repo_browser' => 'repo_browser#index', :as => :repo_browser
   match ':controller/:action' => '#index'
   match '/' => 'apps#index'
 

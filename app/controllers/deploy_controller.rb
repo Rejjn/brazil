@@ -236,7 +236,7 @@ class DeployController < ApplicationController
       type = @vscm.find_schema_type schema
     else
       source = 'brazil'
-      activity = @app.activities.find(:first, :conditions => ["`activities`.schema = ?", schema])
+      activity = @app.activities.where(:schema => schema).limit(1)
       type = activity.db_type 
     end
       
@@ -244,7 +244,7 @@ class DeployController < ApplicationController
   end
   
   def find_db_instances type
-    @db_instances = DbInstance.find(:all, :conditions => ['db_type = ?', type])
+    @db_instances = DbInstance.where(:db_type => type)
   end
   
   def set_credentials

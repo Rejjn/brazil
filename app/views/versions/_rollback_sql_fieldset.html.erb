@@ -5,7 +5,7 @@
   <div>
     <pre class="brush:sql"><%=h create_rollback_sql(version) %></pre>
   
-    <% form_for(version, :url => rollback_app_activity_version_path(activity.app, activity, version)) do |f| %>
+    <%= form_for(version, :url => rollback_app_activity_version_path(activity.app, activity, version)) do |f| %>
       <%= render :partial => 'shared/form_error', :locals => {:f => f} %>
       <%= f.hidden_field :state, :value => Version::STATE_CREATED %>
       <div class="span-5">

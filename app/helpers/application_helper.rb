@@ -1,4 +1,27 @@
 module ApplicationHelper
+  
+  def javascripts
+    javascript_tags = ''
+    if File.exists? "#{Rails.root.to_s}/public/javascripts/#{params[:controller]}.js"
+      javascript_tags << javascript_include_tag("#{params[:controller]}")
+    end
+    if File.exists? "#{Rails.root.to_s}/public/javascripts/#{params[:controller]}/#{params[:action]}.js"
+      javascript_tags << javascript_include_tag("#{params[:controller]}/#{params[:action]}")
+    end
+    javascript_tags
+  end
+
+  def stylesheets
+    link_tags = ''
+    if File.exists? "#{Rails.root.to_s}/public/stylesheets/#{params[:controller]}.css"
+      link_tags << stylesheet_link_tag("#{params[:controller]}", :media => "screen, projection")
+    end
+    if File.exists? "#{Rails.root.to_s}/public/stylesheets/#{params[:controller]}/#{params[:action]}.css"
+      link_tags << stylesheet_link_tag("#{params[:controller]}/#{params[:action]}", :media => "screen, projection")
+    end
+    link_tags
+  end
+  
   def generate_title(crumbs)
     title = ''
     crumbs[1..-1].each do |crumb|
@@ -41,7 +64,7 @@ module ApplicationHelper
     end
   end
 
-  def truncate_words(text, length = 30, end_string = '…')
+  def truncate_words(text, length = 30, end_string = '...')
     words = text.split
     words[0...length].join(' ') + (words.length > length ? end_string : '')
   end
