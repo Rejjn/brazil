@@ -1,6 +1,4 @@
 
-require 'brazil/sessionsql_storage'
-
 class ChangesController < ApplicationController
   # GET /apps/:app_id/activities/:activity_id/changes.xml
   def index

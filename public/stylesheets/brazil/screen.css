@@ -288,7 +288,7 @@ h4 {
   padding: 0px;
 }
 
-#change_notice, #change_error, #deploy_notice, #deploy_error{
+#change_notice, #change_error, #deploy_notice, #deploy_error, #error, #notice, #form_error{
   display:none;  
 }
 

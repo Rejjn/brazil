@@ -83,6 +83,10 @@ var brazil = function() {
   }
 
   return {
+    repo_browser: {
+      
+    },
+    
     move : {
       scrollable: function(id) {
         jQuery(id).css("position", "relative");

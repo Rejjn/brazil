@@ -1,6 +1,4 @@
 
-require 'brazil/sessionsql_storage'
-
 class FlashController < ApplicationController
   layout false
   

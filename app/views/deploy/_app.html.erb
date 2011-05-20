@@ -2,6 +2,6 @@
 
 <div>
   <strong>Select schema:</strong>
-  <%= select_tag "schema", '<option>-- Select --</option>' + options_for_select(@schemas, params[:schema]), :class => 'deploy_app' %>
+  <%= select_tag "schema", raw('<option>-- Select --</option>' + options_for_select(@schemas, params[:schema])), :class => 'deploy_app' %>
 <div>
 

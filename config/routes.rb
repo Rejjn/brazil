@@ -80,13 +80,13 @@ Brazil::Application.routes.draw do
         end
       end
 
-      resources :versions, :except => :none do
+      resources :versions do
         member do
-          post :merge
           get :delete
           post :rollback
+          post :upload
+          post :update
           post :deploy
-          post :test
         end
       end
     end

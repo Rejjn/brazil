@@ -4,6 +4,8 @@ class DeployController < ApplicationController
   def index
     @apps = App.all
 
+    puts @apps.inspect
+
     respond_to do |format|
       format.html # index.html.erb
       format.xml 

@@ -1,6 +1,11 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe DbInstancesController do
+  
+  before(:each) do
+    @request.env["HTTP_AUTHORIZATION"] = BasicAuthHelper.auth_string
+  end
+  
   describe "handling GET /db_instances" do
 
     before(:each) do
@@ -38,6 +43,7 @@ describe DbInstancesController do
     before(:each) do
       @db_instance = mock_model(DbInstance)
       DbInstance.stub!(:find).and_return(@db_instance)
+      DbInstance.stub!(:all).and_return([@db_instance])
     end
 
     def do_get
@@ -61,7 +67,8 @@ describe DbInstancesController do
 
     it "should assign the found db_instance for the view" do
       do_get
-      assigns[:db_instance].should equal(@db_instance)
+      assigns[:db_instance].should == @db_instance
+      assigns[:db_instance_prod].should  == @db_instance
     end
   end
 

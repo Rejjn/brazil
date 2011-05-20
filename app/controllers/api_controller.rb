@@ -1,11 +1,10 @@
 
-require 'brazil/database_tools'
 
 class ApiController < ApplicationController
 
   layout false
   
-  skip_filter :add_controller_crumbs
+  skip_filter :add_controller_crumbs, :authenticate
 
   def update
     respond_to do |format|
@@ -21,7 +20,7 @@ class ApiController < ApplicationController
         raise RuntimeError, "parameter <src_path> must be present" unless params[:src_path]
         raise RuntimeError, "parameter <target_version> must be present" unless params[:target_version]
         
-        db_tools = Brazil::DatabaseTools.new
+        db_tools = Brazil::DatabaseSchema.new
         db_tools.configure(params[:host], params[:port], params[:db_type], params[:db_schema], params[:db_user], params[:db_password])
         db_tools.source_tools.configure(params[:src_type], params[:src_uri], params[:src_path], ::AppConfig.vc_read_user, ::AppConfig.vc_read_password, ::AppConfig.vc_dir)
     
@@ -59,7 +58,7 @@ class ApiController < ApplicationController
         raise RuntimeError, "parameter <src_path> must be present" unless params[:src_path]
         raise RuntimeError, "parameter <target_version> must be present" unless params[:target_version]
         
-        db_tools = Brazil::DatabaseTools.new
+        db_tools = Brazil::DatabaseSchema.new
         db_tools.configure(params[:host], params[:port], params[:db_type], params[:db_schema], params[:db_user], params[:db_password])
         db_tools.source_tools.configure(params[:src_type], params[:src_uri], params[:src_path], ::AppConfig.vc_read_user, ::AppConfig.vc_read_password, ::AppConfig.vc_dir)
     

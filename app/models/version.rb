@@ -1,8 +1,3 @@
-require 'rio'
-
-require 'brazil/schema_revision'
-require 'brazil/schema_version_control'
-require 'brazil/version_control'
 
 class Version < ActiveRecord::Base
   STATE_CREATED = 'created'
@@ -173,7 +168,7 @@ class Version < ActiveRecord::Base
   
   
   def init_db(host, port, db_type, db_schema, db_username, db_password)
-    db_tools = Brazil::DatabaseTools.new
+    db_tools = Brazil::DatabaseSchema.new
     db_tools.configure(host, port, db_type, db_schema, db_username, db_password)
     
     db_tools

@@ -90,8 +90,8 @@ class VersionsController < ApplicationController
     end
   end
 
-  # PUT /apps/:app_id/activities/:activity_id/versions/1/test.format
-  def test
+  # PUT /apps/:app_id/activities/:activity_id/versions/1/update.format
+  def update
     @activity = Activity.find(params[:activity_id])
     @version = @activity.versions.find(params[:id])
     if (Float(params[:test_db_instance_id]) != nil rescue false)
@@ -144,7 +144,7 @@ class VersionsController < ApplicationController
   end
 
   # PUT /apps/:app_id/activities/:activity_id/versions/1/deploy.format
-  def deploy
+  def upload
     @activity = Activity.find(params[:activity_id])
     @version = @activity.versions.find(params[:id])
 
@@ -163,15 +163,15 @@ class VersionsController < ApplicationController
     end
   end
 
-  # PUT /apps/:app_id/activities/:activity_id/versions/1/merge
-  def merge
+  # PUT /apps/:app_id/activities/:activity_id/versions/1/deploy.format
+  def deploy
     @activity = Activity.find(params[:activity_id])
     @version = @activity.versions.find(params[:id])
-    @version.merge_to_dev(create_update_sql(@version), params[:dev_db_instance_id], params[:dev_schema], params[:db_username], params[:db_password])
 
     respond_to do |format|
-      if @version.errors.empty? && @version.update_attributes(params[:version])
-        flash[:notice] = "Version '#{@version}' is now merged"
+      if @version.update_attributes(params[:version])
+        @activity.deployed!
+        flash[:notice] = "Version '#{@version}' is now set as deployed"
         format.html { redirect_to app_activity_version_path(@activity.app, @activity, @version) }
         format.xml  { head :ok }
         format.json  { head :ok }

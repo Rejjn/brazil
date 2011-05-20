@@ -1,5 +1,3 @@
-require 'brazil/schema_revision'
-require 'brazil/database_schema'
 
 class DbInstance < ActiveRecord::Base
   ENV_DEV = 'dev'

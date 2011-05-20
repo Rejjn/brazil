@@ -1,6 +1,11 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe AppsController do 
+  
+  before(:each) do
+    @request.env["HTTP_AUTHORIZATION"] = BasicAuthHelper.auth_string
+  end
+  
   describe "handling GET /apps" do
 
     before(:each) do

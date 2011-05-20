@@ -2,6 +2,8 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe ActivitiesController do
   before(:each) do
+    @request.env["HTTP_AUTHORIZATION"] = BasicAuthHelper.auth_string
+    
     @app = mock_model(App, :to_param => "1")
 
     @activity = mock_model(Activity, :to_param => "1")
@@ -49,17 +51,15 @@ describe ActivitiesController do
   describe "handling GET /activities/1" do
 
     before(:each) do
-      change = mock_model(Change)
+      change = mock_model('Change')
 
       changes = mock(Array)
       changes.should_receive(:build).and_return(change)
       @activity.should_receive(:changes).and_return(changes)
-
-      Change.should_receive(:first).and_return(nil)
     end
 
     def do_get
-      get :show, :id => "1", :app_id => 1
+      get :show, :id => '1', :app_id => '1'
     end
 
     it "should be successful" do
@@ -90,7 +90,7 @@ describe ActivitiesController do
     end
 
     def do_get
-      get :new, :app_id => 1
+      get :new, :app_id => '1'
     end
 
     it "should be successful" do
@@ -126,7 +126,7 @@ describe ActivitiesController do
     end
 
     def do_get
-      get :edit, :id => "1", :app_id => 1
+      get :edit, :id => "1", :app_id => '1'
     end
 
     it "should be successful" do
@@ -161,7 +161,7 @@ describe ActivitiesController do
 
       def do_post
         @activity.should_receive(:save).and_return(true)
-        post :create, :activity => {}, :app_id => 1
+        post :create, :activity => {}, :app_id => '1'
       end
 
       it "should create a new activity" do
@@ -179,7 +179,7 @@ describe ActivitiesController do
 
       def do_post
         @activity.should_receive(:save).and_return(false)
-        post :create, :activity => {}, :app_id => 1
+        post :create, :activity => {}, :app_id => '1'
       end
 
       it "should re-render 'new'" do
@@ -194,8 +194,9 @@ describe ActivitiesController do
     describe "with successful update" do
 
       def do_put
+        @request.env["HTTP_AUTHORIZATION"] = BasicAuthHelper.auth_string
         @activity.should_receive(:update_attributes).and_return(true)
-        put :update, :id => "1", :app_id => 1
+        put :update, :id => "1", :app_id => '1'
       end
 
       it "should find the activity requested" do
@@ -223,8 +224,9 @@ describe ActivitiesController do
     describe "with failed update" do
 
       def do_put
+        @request.env["HTTP_AUTHORIZATION"] = BasicAuthHelper.auth_string
         @activity.should_receive(:update_attributes).and_return(false)
-        put :update, :id => "1", :app_id => 1
+        put :update, :id => "1", :app_id => '1'
       end
 
       it "should re-render 'edit'" do

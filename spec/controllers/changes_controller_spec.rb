@@ -2,6 +2,8 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe ChangesController do
   before(:each) do
+    @request.env["HTTP_AUTHORIZATION"] = BasicAuthHelper.auth_string
+    
     @app = mock_model(App, :to_param => "2")
     App.stub!(:find).with("2").and_return(@app)
 
@@ -12,7 +14,7 @@ describe ChangesController do
     @activities.stub!(:find).and_return(@activity)
     @app.stub!(:activities).and_return(@activities)
 
-    change = mock_model(Change)
+    change = mock_model('Change')
     @changes = mock(Array)
     @changes.stub!(:find).and_return(change)
     @activity.stub!(:changes).and_return(@changes)
@@ -51,7 +53,7 @@ describe ChangesController do
   describe "handling GET /changes/1" do
 
     before(:each) do
-      @change = mock_model(Change)
+      @change = mock_model('Change')
       @changes.stub!(:find).and_return(@change)
     end
 
@@ -83,7 +85,7 @@ describe ChangesController do
   describe "handling GET /changes/new" do
 
     before(:each) do
-      @change = mock_model(Change)
+      @change = mock_model('Change')
       @changes.stub!(:build).and_return(@change)
     end
 
@@ -120,7 +122,7 @@ describe ChangesController do
   describe "handling GET /changes/1/edit" do
 
     before(:each) do
-      @change = mock_model(Change)
+      @change = mock_model('Change')
       Change.stub!(:find).and_return(@change)
 
       @changes.stub!(:find).and_return(@change)
@@ -156,8 +158,9 @@ describe ChangesController do
     before(:each) do
       Activity.stub!(:find).with('2').and_return(@activity)
 
-      @change = mock_model(Change, :to_param => "1")
+      @change = mock_model('Change', :to_param => "1")
       @change.stub!(:sql).and_return('')
+      @change.should_receive(:developer=).with('ldap_svnbuildserver').and_return(nil)
 
       @changes.stub!(:build).and_return(@change)
     end
@@ -208,7 +211,7 @@ describe ChangesController do
     before(:each) do
       Activity.stub!(:find).and_return(@activity)
 
-      @change = mock_model(Change, :to_param => "1")
+      @change = mock_model('Change', :to_param => "1")
       @change.stub!(:sql).and_return('')
       @change.stub!(:activity).and_return(@activity)
 

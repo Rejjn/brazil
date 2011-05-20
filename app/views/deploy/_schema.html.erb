@@ -21,6 +21,6 @@
 
 <div>
   <strong>Select database instance:</strong>
-  <%= select_tag "db_instance", '<option>-- Select --</option>' + options_from_collection_for_select(@db_instances, "id", "db_alias", params[:db_instance].to_i), :class => 'deploy_app' %>
+  <%= select_tag "db_instance", raw('<option>-- Select --</option>' + options_from_collection_for_select(@db_instances, "id", "db_alias", params[:db_instance].to_i)), :class => 'deploy_app' %>
 <div>
 

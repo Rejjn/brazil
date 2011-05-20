@@ -190,6 +190,10 @@ class ActivitiesController < ApplicationController
     end
   end 
 
+  def delete
+    
+  end
+
   private
 
   def add_controller_crumbs

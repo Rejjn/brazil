@@ -1,6 +1,4 @@
 
-require 'brazil/version_control'
-
 class Change < ActiveRecord::Base
   STATE_SAVED = 'saved'
   STATE_EXECUTED = 'executed'
@@ -17,7 +15,7 @@ class Change < ActiveRecord::Base
   def use_sql(sql, db_username, db_password)
     case state
     when STATE_EXECUTED
-      db_tools = Brazil::DatabaseTools.new
+      db_tools = Brazil::DatabaseSchema.new
       db_tools.configure(db_instance_dev.host, db_instance_dev.port, db_instance_dev.db_type, activity.dev_schema, activity.dev_user, activity.dev_password)
       sql = db_tools.prepare_sql(db_instance_dev.db_type, sql, activity.dev_schema, activity.dev_schema, activity.dev_schema)
       db_tools.execute_sql(sql)

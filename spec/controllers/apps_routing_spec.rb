@@ -1,55 +1,59 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe AppsController do
-  describe "route generation" do
-
-    it "should map { :controller => 'apps', :action => 'index' } to /apps" do
-      route_for(:controller => "apps", :action => "index").should == "/apps"
+  describe "named route generation" do
+    it "should map 'apps_path' to /apps" do
+      {:get => apps_path}.should == {:get => '/apps'}
+    end
+    
+    it "should map 'new_app_path' to /apps/new" do
+      {:get => new_app_path}.should == {:get => '/apps/new'}
     end
 
-    it "should map { :controller => 'apps', :action => 'new' } to /apps/new" do
-      route_for(:controller => "apps", :action => "new").should == "/apps/new"
+    it "should map 'app_path(:id => 1)' to /apps/1" do
+      {:get => app_path(1)}.should == {:get => '/apps/1'}
     end
-
-    it "should map { :controller => 'apps', :action => 'show', :id => 1 } to /apps/1" do
-      route_for(:controller => "apps", :action => "show", :id => "1").should == "/apps/1"
+    
+    it "should map 'edit_app_path(:id => 1)' to /apps/1/edit" do
+      {:get => edit_app_path(1)}.should == {:get => '/apps/1/edit'}
     end
-
-    it "should map { :controller => 'apps', :action => 'edit', :id => 1 } to /apps/1/edit" do
-      route_for(:controller => "apps", :action => "edit", :id => "1").should == "/apps/1/edit"
+    
+    it "should map 'delete_app_path(:id => 1)' to /apps/1/delete" do
+      {:get => delete_app_path(1)}.should == {:get => '/apps/1/delete'}
     end
-
-    it "should map { :controller => 'apps', :action => 'update', :id => 1} to /apps/1" do
-      route_for(:controller => "apps", :action => "update", :id => "1").should == {:path => "/apps/1", :method => :put}
-    end
-
   end
 
   describe "route recognition" do
-
-    it "should generate params { :controller => 'apps', action => 'index' } from GET /apps" do
-      params_from(:get, "/apps").should == {:controller => "apps", :action => "index"}
+    it "should map GET '/apps' to { :controller => 'apps', :action => 'index' }" do
+      { :get => "/apps" }.should route_to(:controller => "apps", :action => "index")      
     end
 
-    it "should generate params { :controller => 'apps', action => 'new' } from GET /apps/new" do
-      params_from(:get, "/apps/new").should == {:controller => "apps", :action => "new"}
+    it "should map GET /apps/new to { :controller => 'apps', :action => 'new' }" do
+      { :get => "/apps/new" }.should route_to(:controller => "apps", :action => "new")
     end
 
-    it "should generate params { :controller => 'apps', action => 'create' } from POST /apps" do
-      params_from(:post, "/apps").should == {:controller => "apps", :action => "create"}
+    it "should map POST /apps to { :controller => 'apps', :action => 'create' }" do
+      { :post => "/apps" }.should route_to(:controller => "apps", :action => "create")
     end
 
-    it "should generate params { :controller => 'apps', action => 'show', id => '1' } from GET /apps/1" do
-      params_from(:get, "/apps/1").should == {:controller => "apps", :action => "show", :id => "1"}
+    it "should map GET /apps/1 to { :controller => 'apps', :action => 'show', :id => '1' }" do
+      { :get => "/apps/1" }.should route_to(:controller => 'apps', :action => 'show', :id => '1')
     end
 
-    it "should generate params { :controller => 'apps', action => 'edit', id => '1' } from GET /apps/1;edit" do
-      params_from(:get, "/apps/1/edit").should == {:controller => "apps", :action => "edit", :id => "1"}
+    it "should map GET /apps/1/edit to { :controller => 'apps', :action => 'edit', :id => 1 }" do
+      { :get => "/apps/1/edit" }.should route_to(:controller => 'apps', :action => 'edit', :id => '1')
     end
 
-    it "should generate params { :controller => 'apps', action => 'update', id => '1' } from PUT /apps/1" do
-      params_from(:put, "/apps/1").should == {:controller => "apps", :action => "update", :id => "1"}
+    it "should map PUT /apps/1 to { :controller => 'apps', :action => 'update', :id => '1' }" do
+      { :put => "/apps/1" }.should route_to(:controller => 'apps', :action => 'update', :id => '1')
     end
 
+    it "should map DELET /apps/1 to { :controller => 'apps', :action => 'destroy', :id => 1}" do
+      { :delete => "/apps/1" }.should route_to(:controller => 'apps', :action => 'destroy', :id => '1')
+    end
+    
+    it "should map GET /apps/1/delete to { :controller => 'apps', :action => 'delete', :id => '1' }" do
+      { :get => "/apps/1/delete" }.should route_to(:controller => 'apps', :action => 'delete', :id => '1' )
+    end
   end
 end
