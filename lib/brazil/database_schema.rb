@@ -2,7 +2,7 @@
 require 'rio'
 
 require 'brazil/schema_revision'
-require 'brazil/version_control'
+#require 'brazil/version_control_base'
 require 'brazil/serenity_integration'
 
 module Brazil
@@ -90,7 +90,7 @@ module Brazil
   
       begin
         db_connection = create_db_connection
-        version_rows = db_connection.select_all("SELECT * FROM #{@db_schema}.schema_versions ORDER BY major DESC, minor DESC, patch DESC")
+        version_rows = db_connection.select_all("SELECT * FROM #{@db_schema}.schema_versions ORDER BY major ASC, minor ASC, patch ASC")
         version_rows.each do |version|
           schema_versions << Brazil::SchemaRevision.new(version['MAJOR'], version['MINOR'], version['PATCH'], version['CREATED'], version['DESCRIPTION'])
         end
@@ -117,6 +117,8 @@ module Brazil
   
       return true
     end
+  
+    protected
   
     def create_db_connection
       begin
@@ -162,14 +164,14 @@ module Brazil
       src_working_copy = app_schema_vc.vc_working_copy
       
       if version_information.count != 0
-        current_version = version_information[0]
+        current_version = version_information.last
       else
         current_version = Brazil::SchemaRevision.new(0, 0, 0)
       end
       
       target_version = Brazil::SchemaRevision::from_string(target_version)
-      deploy_files = rio(src_working_copy, app_schema, @db_type).files["*-#{direction.to_s}.sql"]
-      
+      deploy_files = rio(src_working_copy.to_s, app_schema, @db_type).files["*-#{direction.to_s}.sql"]
+
       deploy_files.sort! do |x,y|
         x_version = Brazil::SchemaRevision::from_string(x.to_s.match(/-(\w+_\w+_\w+)-/)[1])
         y_version = Brazil::SchemaRevision::from_string(y.to_s.match(/-(\w+_\w+_\w+)-/)[1])
@@ -181,10 +183,8 @@ module Brazil
         version = Brazil::SchemaRevision::from_string(file.to_s.match(/-(\w+_\w+_\w+)-/)[1])
         if direction == :update
           selected_files << file if current_version < version && version <= target_version
-          puts selected_files.inspect
         else
-          selected_files << file if current_version >= version && version > target_version
-          puts selected_files.inspect
+          selected_files << file if current_version >= version && version >= target_version
         end
       end
 
@@ -198,11 +198,12 @@ module Brazil
       selected_files.each do |file|
         sql_script = []
         file >> sql_script
-        sql << {:file => File.basename(file), :sql => sql_script}
+        sql << {:file => File.basename(file.to_s), :sql => sql_script}
       end
       
       sql
     end
+
     
     def prepare_sql(db_type, sql, schema_name, user_name, role_name)
       

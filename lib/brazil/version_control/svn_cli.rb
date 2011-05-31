@@ -1,12 +1,19 @@
 
-require 'brazil/version_control/svn_generic'
-
 require 'open3'
 
-module Brazil::VersionControl
-  class SVNCLI < SVNGeneric
+require 'brazil/version_control/svn_generic'
+
+module Brazil
+  module VersionControl
+  class SvnCli < SVNGeneric
 
     SVN_BIN = ::AppConfig.svn_bin
+
+    def initialize(repository_uri, username, password)
+      @repository_uri = repository_uri
+      @username = username
+      @password = password
+    end
 
     def checkout(checkout_path, vc_revision=nil)
       repos_path = make_revision_path(vc_revision)
@@ -20,7 +27,7 @@ module Brazil::VersionControl
     end
 
     def export(export_path, vc_revision=nil)
-      raise Brazil::VersionControlException, "API function not yet implemented!", caller
+      raise Brazil::VersionControlException, "API function 'export' not yet implemented!", caller
 #      repos_path = make_revision_path(vc_revision)
 #      begin
 #        vc_client.export(repos_path, export_path, nil)
@@ -34,10 +41,10 @@ module Brazil::VersionControl
 
       begin
         Open3.popen3("#{svn_bin} update #{working_copy_path}") do |stdin, stdout, stderr, wait_thr|
-          raise Brazil::Error, "Failed update working copy #{working_copy_path}, #{stderr.gets}" if wait_thr.value.exitstatus != 0
+          #raise Brazil::Error, "Failed update working copy #{working_copy_path}, #{stderr.gets}" if wait_thr.value.exitstatus != 0
             
           if stdout.gets =~ /^Skipped/         
-            raise Brazil::Error, "Skipped #{working_copy_path}, most likely not a working copy, #{stdout.gets}"
+            #raise Brazil::Error, "Skipped #{working_copy_path}, most likely not a working copy, #{stdout.gets}"
           end
         end
       rescue Brazil::Error => cli_exception
@@ -46,7 +53,7 @@ module Brazil::VersionControl
     end
 
     def get_property(relative_repos_path, property_name, vc_revision=nil)
-      raise Brazil::VersionControlException, "API function not yet implemented!", caller
+      raise Brazil::VersionControlException, "API function 'get_property' not yet implemented!", caller
 #      repos_path = make_revision_path(vc_revision, relative_repos_path)
 #      begin
 #        return vc_client.revprop_get(property_name, repos_path)
@@ -56,7 +63,7 @@ module Brazil::VersionControl
     end
 
     def set_property(relative_repos_path, property_name, property_value, vc_revision=nil)
-      raise Brazil::VersionControlException, "API function not yet implemented!", caller
+      raise Brazil::VersionControlException, "API function 'set_property' not yet implemented!", caller
 #      repos_path = make_revision_path(vc_revision, relative_repos_path)
 #      begin
 #        vc_client.revprop_set(property_name, property_value, repos_path, nil, false)
@@ -105,16 +112,8 @@ module Brazil::VersionControl
     end
 
     def valid_credentials?
-      raise Brazil::VersionControlException, "API function not yet implemented!", caller
-#      begin
-#        vc_client.ls(@repository_uri, nil)
-#      rescue Svn::Error::RA_NOT_AUTHORIZED
-#        return false
-#      rescue Svn::Error => svn_exception
-#        raise Brazil::VersionControlException, "Could not check credentials on url: #{@repository_uri} (#{svn_exception})", caller
-#      end
-#
-#      return true
+      # can only check (write) credentials with commit it seems...
+      true       
     end
 
     protected
@@ -150,7 +149,7 @@ module Brazil::VersionControl
   
 
     def set_commit_message(commit_message)
-      raise Brazil::VersionControlException, "API function not yet implemented!", caller
+      raise Brazil::VersionControlException, "API function 'set_commit_message' not yet implemented!", caller
 #      begin
 #        vc_client.set_log_msg_func do |items|
 #          [true, commit_message]
@@ -161,7 +160,7 @@ module Brazil::VersionControl
     end
 
     def repos_list(repos_path, recurse, &block) # :yields: VersionControl::Path
-      raise Brazil::VersionControlException, "API function not yet implemented!", caller
+      raise Brazil::VersionControlException, "API function 'repos_list' not yet implemented!", caller
 #      begin
 #        vc_client.list(repos_path, nil, nil, recurse, nil, true) do |path, dirent, lock, abs_path|
 #          vc_path = make_vc_path(repos_path, path, dirent)
@@ -173,7 +172,7 @@ module Brazil::VersionControl
     end
 
     def repos_cat(repos_path)
-      raise Brazil::VersionControlException, "API function not yet implemented!", caller
+      raise Brazil::VersionControlException, "API repos_cat 'export' not yet implemented!", caller
 #      begin
 #        return vc_client.cat(repos_path, nil)
 #      rescue Svn::Error => svn_exception
@@ -182,7 +181,7 @@ module Brazil::VersionControl
     end
 
     def repos_copy(vc_revision, commit_message='')
-      raise Brazil::VersionControlException, "API function not yet implemented!", caller
+      raise Brazil::VersionControlException, "API function 'repos_copy' not yet implemented!", caller
 #      set_commit_message(commit_message)
 #      destination_uri = make_revision_path(vc_revision)
 #
@@ -207,6 +206,6 @@ module Brazil::VersionControl
       vc_path.author = dirent.last_author
       return vc_path
     end
-
+  end
   end
 end

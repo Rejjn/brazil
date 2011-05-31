@@ -1,9 +1,13 @@
-require 'brazil/version_control'
+#require 'brazil/version_control_base'
 require 'brazil/version_control/path'
 
 module Brazil::VersionControl
-  class SVNGeneric < VersionControl
+  class SVNGeneric
 
+    REVISION_TYPE_TAG = :tag
+    REVISION_TYPE_BRANCH = :branch
+    REVISION_TYPE_TRUNK = :trunk
+    
     def cat(relative_repos_path, vc_revision=nil)
       repos_path = make_revision_path(vc_revision, relative_repos_path)
       return repos_cat(repos_path)

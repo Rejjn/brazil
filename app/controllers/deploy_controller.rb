@@ -1,15 +1,13 @@
 class DeployController < ApplicationController
+  
+  respond_to :html, :xml
+  
   # GET /deploy
   # GET /deploy.xml
   def index
     @apps = App.all
 
-    puts @apps.inspect
-
-    respond_to do |format|
-      format.html # index.html.erb
-      format.xml 
-    end
+    respond_with
   end
 
   # GET /deploy/1
@@ -28,7 +26,7 @@ class DeployController < ApplicationController
       rescue => exception
         compile_grouped_dbi_list
         flash[:error] = "#{exception} (#{exception.class})"
-        format.html { render :action => "show_app" }
+        format.html { render :action => "index" }
         format.xml  { render :status => :unprocessable_entity }
       end
     end
@@ -51,7 +49,7 @@ class DeployController < ApplicationController
       rescue => exception
         compile_grouped_dbi_list
         flash[:error] = "#{exception} (#{exception.class})"
-        format.html { render :action => "show_schema" }
+        format.html { render :action => "show_app", :status => :unprocessable_entity }
         format.xml  { render :status => :unprocessable_entity }
       end
     end
@@ -78,7 +76,7 @@ class DeployController < ApplicationController
       rescue => exception
         compile_grouped_dbi_list
         flash[:error] = "#{exception} (#{exception.class})"
-        format.html { render :action => "show_instance" }
+        format.html { render :action => "show_schema", :status => :unprocessable_entity }
         format.xml  { render :status => :unprocessable_entity }
       end
     end
@@ -93,8 +91,9 @@ class DeployController < ApplicationController
   # PUT /deploy/1/deploy_update
   # PUT /deploy/1/deploy_update.xml
   def update
-    if params[:target_version] && !params[:target_version].empty?
-      respond_to do |format|
+    respond_to do |format|
+      if params[:target_version] && !params[:target_version].empty?
+      
         begin 
           @app = App.find(params[:app])
           @db_instance = DbInstance.find(params[:db_instance])
@@ -107,30 +106,37 @@ class DeployController < ApplicationController
                                                   session[:db_credentials][:target_schema],
                                                   params[:target_version])
           
-          load_for_deoploy_fieldset
+          if @run_successfull
+            flash[:notice] = "SQL successfully deployed to database"
+          else
+            flash[:error] = "Failed to deploy SQL to database (scripts may hasve been partially executed, see below)"
+          end
+          
+          load_for_deploy_fieldset
           format.html { render :partial => 'deploy_fieldset' }
           format.xml
-        rescue => e
-          flash[:error] = "Failed to wipe database schema! (#{e})"
-          
-          load_for_deoploy_fieldset
-          format.html { render :partial => 'deploy_fieldset' }
-          format.xml  { render :status => :unprocessable_entity }
+        #rescue => e
+#          flash[:error] = "Failed to update database schema! (#{e})"
+#          load_for_deploy_fieldset
+#
+#          format.html { render :partial => 'update_fieldset', :locals => {:update_versions => @update_versions}, :status => :unprocessable_entity }
+#          format.xml  { render :status => :unprocessable_entity }
         end    
-      end  
-    else
-      flash[:error] = "Target version is not set"
-      load_for_deoploy_fieldset
-      format.html { render :partial => 'deploy_fieldset' }
-      format.xml  { render :status => :unprocessable_entity }      
+      else
+        flash[:error] = "Target version is not set"
+        load_for_deploy_fieldset
+        
+        format.html { render :partial => 'update_fieldset', :locals => {:update_versions => @update_versions}, :status => :unprocessable_entity }
+        format.xml  { render :status => :unprocessable_entity }      
+      end
     end
   end
   
   # PUT /deploy/1/deploy_rollback
   # PUT /deploy/1/deploy_rollback.xml
   def rollback
-    if params[:target_version] && !params[:target_version].empty?
-      respond_to do |format|
+    respond_to do |format|
+      if params[:target_version] && !params[:target_version].empty?
         begin 
           @app = App.find(params[:app])
           @db_instance = DbInstance.find(params[:db_instance])
@@ -143,23 +149,23 @@ class DeployController < ApplicationController
                                                   session[:db_credentials][:target_schema],
                                                   params[:target_version])
           
-          load_for_deoploy_fieldset
+          load_for_deploy_fieldset
           format.html { render :partial => 'deploy_fieldset' }
           format.xml
         rescue => e
           flash[:error] = "Failed to wipe database schema! (#{e})"
           
-          load_for_deoploy_fieldset
-          format.html { render :partial => 'deploy_fieldset' }
+          load_for_deploy_fieldset
+          format.html { render :partial => 'rollback_fieldset', :locals => {:rollback_versions => @rollback_versions }, :status => :unprocessable_entity }
           format.xml  { render :status => :unprocessable_entity }
         end    
-      end  
-    else
-      flash[:error] = "Target version is not set"
-      load_for_deoploy_fieldset
-      format.html { render :partial => 'deploy_fieldset' }
-      format.xml  { render :status => :unprocessable_entity }      
-    end
+      else
+        flash[:error] = "Target version is not set"
+        load_for_deploy_fieldset
+        format.html { render :partial => 'rollback_fieldset', :locals => {:rollback_versions => @rollback_versions }, :status => :unprocessable_entity }
+        format.xml  { render :status => :unprocessable_entity }      
+      end
+    end  
   end
   
   # PUT /deploy/1/deploy_rollback
@@ -172,14 +178,14 @@ class DeployController < ApplicationController
         
         flash[:notice] = "Schema wiped!"
         
-        load_for_deoploy_fieldset
+        load_for_deploy_fieldset
         format.html { render :partial => 'deploy_fieldset' }
         format.xml
       rescue => e
         flash[:error] = "Failed to wipe database schema! (#{e})"
         
-        load_for_deoploy_fieldset
-        format.html { render :partial => 'deploy_fieldset' }
+        load_for_deploy_fieldset
+        format.html { render :partial => 'deploy_fieldset', :status => :unprocessable_entity }
         format.xml  { render :status => :unprocessable_entity }
       end    
     end    
@@ -187,7 +193,7 @@ class DeployController < ApplicationController
   
   private
   
-  def load_for_deoploy_fieldset
+  def load_for_deploy_fieldset
     @app = App.find(params[:app])
     
     set_app_schema_vc
@@ -263,7 +269,7 @@ class DeployController < ApplicationController
     @version_info = @db_instance.deployed_versions(session[:db_credentials][:db_username], session[:db_credentials][:db_password], session[:db_credentials][:target_schema]) if session[:db_credentials]
     
     @vscm.find_versions(@schema[:name]).each do |version|
-      if version > @version_info[0]
+      if version > @version_info.last
         @update_versions << version
       else
         @rollback_versions << version

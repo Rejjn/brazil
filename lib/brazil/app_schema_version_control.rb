@@ -4,12 +4,10 @@ require 'httpclient'
 require 'digest/md5'
 
 require 'brazil/schema_revision'
-require 'brazil/version_control'
+require 'brazil/version_control/svn_cli'
 
 module Brazil
   class AppSchemaVersionControl
-  
-    attr_reader :vc
   
     TYPE_SUBVERSION = :svn
   
@@ -88,13 +86,11 @@ module Brazil
     end
   
     def vc_working_copy
-      init_working_copy
+      vc
       @vc_working_copy
     end
   
-    private
-  
-    def init_working_copy
+    def vc
       unless @vc_tmp_dir
         raise ArgumentException, 'Temp directory argument not set, cannot initialize working copy' 
       end
@@ -103,7 +99,7 @@ module Brazil
         case @vc_type
           when TYPE_SUBVERSION then
             version_repos_path = "#{@vc_uri}#{@vc_path}"
-            @vc = Brazil::VersionControl.new(@vc_type, version_repos_path, @vc_user, @vc_password)
+            @vc = Brazil::VersionControl::SvnCli.new(version_repos_path, @vc_user, @vc_password)
             unless @vc.valid_credentials?
               raise Brazil::VersionControlException, "version control username or password are not correct"
             end

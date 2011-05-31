@@ -84,9 +84,20 @@ var brazil = function() {
 
   return {
     repo_browser: {
-      
+      set_url: function(browser, input_element) {
+        //jQuery(browser).load(function(){
+          var repo_browser = jQuery(browser);
+          var url = '/';
+          var tmp_url = String(repo_browser.attr('contentWindow').location);
+
+          if (tmp_url.indexOf('=') != -1) {
+            url = tmp_url.substring(tmp_url.lastIndexOf('=') + 1);
+          }
+          
+          jQuery(input_element).val(url);
+        //});
+      },
     },
-    
     move : {
       scrollable: function(id) {
         jQuery(id).css("position", "relative");
@@ -94,11 +105,24 @@ var brazil = function() {
       }
     },
     flash : {
-      notice: function() {
+      notice: function(element) {
+        element = typeof(element) != 'undefined' ? element : '#notice';
         jQuery.get('/flash/notice', function(response) {
-          jQuery('#notice').hide().empty().append(response).fadeIn('slow', function() {
-            setTimeout('jQuery("#notice").fadeOut()', 3000);
-          });
+          if (response != "") {
+            jQuery(element).hide().empty().append(response).fadeIn('slow', function(){
+              setTimeout('jQuery("' + element + '").fadeOut()', 3000);
+            });
+          }
+        });
+      },
+      error: function(element) {
+        element = typeof(element) != 'undefined' ? element : '#error';
+        jQuery.get('/flash/error', function(response) {
+          if (response != "") {
+            jQuery(element).hide().empty().append(response).fadeIn('slow', function(){
+              setTimeout('jQuery("' + element + '").fadeOut()', 3000);
+            });
+          }
         });
       },
       fadeout: function(element, time) {
@@ -109,11 +133,34 @@ var brazil = function() {
         });
       }
     },
-    sql : {
-      show: function() {
-        jQuery.get('/flash/executed_sql', function(response) {
-          jQuery('#deployed_sql').html(response);
-          jQuery('#executed_sql_div').fadeIn('slow');
+    info : {
+      setup_toggle: function(options) {
+        var defaults = { container: '', affected_element: '', show_caption: 'Show', hide_caption: 'Hide'};
+        var settings = jQuery.extend(defaults, options);
+        
+        jQuery.each(jQuery(settings.container), function(index, value) {
+          if (jQuery(value).find('.visibilty_controlls').length == 0) {
+            jQuery(value).prepend('<div class="visibilty_controlls"></div>');
+          }
+          var controller_box = jQuery(value).find('.visibilty_controlls')
+          var affected_element = jQuery(value).find(settings.affected_element)
+          brazil.info.hide(controller_box, affected_element, settings);        
+        });        
+      },
+      show: function(controller_box, affected_element, options) {
+        affected_element.slideDown();
+        controller_box.empty().append('<a href="#">' + options.hide_caption + '</a>');
+        controller_box.find('a').click(function() {
+          brazil.info.hide(controller_box, affected_element, options);
+          return false;
+        });   
+      },
+      hide: function(controller_box, affected_element, options) {
+        affected_element.fadeOut();
+        controller_box.empty().append('<a href="#">' + options.show_caption + '</a>');
+        controller_box.find('a').click(function() {
+          brazil.info.show(controller_box, affected_element, options);
+          return false;
         });
       },
     },
@@ -246,6 +293,7 @@ var brazil = function() {
   }
 }();
 
+/*
 function sql_show_controls(){
   if ($("#deployed_sql").is(":hidden")) {
     $("#deployed_sql").slideDown("slow");
@@ -256,3 +304,4 @@ function sql_show_controls(){
     $("#sql_show_controls").html("Show SQL");
   }
 }
+*/

@@ -4,11 +4,9 @@ var deploy_forms = function(){
     response_container: '#deployment',
     success: function(){
       brazil.flash.notice('#deploy_notice');
-      brazil.sql.show();
     },
     error: function(){
       brazil.flash.error('#deploy_error');
-      brazil.sql.show();
     },
     done: function(){
       brazil.manipulate.syntax_highlight();
@@ -21,11 +19,15 @@ var deploy_forms = function(){
     response_container: '#deployment',
     success: function(){
       brazil.flash.notice('#deploy_notice');
-      brazil.sql.show();
+      brazil.info.setup_toggle({
+        container: '.executed_sql_box', 
+        affected_element: '.executed_sql', 
+        show_caption: 'Show SQL', 
+        hide_caption: 'Hide SQL'
+      });
     },
     error: function(){
       brazil.flash.error('#deploy_error');
-      brazil.sql.show();
     },
     done: function(){
       brazil.manipulate.syntax_highlight();
@@ -38,17 +40,31 @@ var deploy_forms = function(){
     response_container: '#deployment',
     success: function(){
       brazil.flash.notice('#deploy_notice');
-      brazil.sql.show();
+      brazil.flash.error('#deploy_error');
+      brazil.info.setup_toggle({
+        container: '.executed_sql_box', 
+        affected_element: '.executed_sql', 
+        show_caption: 'Show SQL', 
+        hide_caption: 'Hide SQL'
+      });
     },
     error: function(){
       brazil.flash.error('#deploy_error');
-      brazil.sql.show();
     },
     done: function(){
       brazil.manipulate.syntax_highlight();
       deploy_forms();
     },
   });
+  
+  brazil.info.setup_toggle({
+    container: '#deployed_versions_box', 
+    affected_element: '#all_deployed_versions', 
+    show_caption: 'Show Versions', 
+    hide_caption: 'Hide Versions'
+  });  
+  
+  
 }
 
 $(document).ready(function() {

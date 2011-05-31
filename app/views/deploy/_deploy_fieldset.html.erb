@@ -1,49 +1,42 @@
-  <div class="messages">
-    <div id="deploy_notice" class="box success"></div>
-    <div id="deploy_error" class="box error"></div>
-  </div>
+<% content_for :view_external_js do %>
+  <%= javascript_include_tag "syntaxhighlighter/shCore", "syntaxhighlighter/shBrushSql" %>
+<% end %>
+
+<div class="messages">
+  <div id="deploy_notice" class="box success"></div>
+  <div id="deploy_error" class="box error"></div>
+</div>
 
 <% if @deployment_results %>
   <div class="span-24 last">
-    <% content_for :view_external_js do %>
-      <%= javascript_include_tag "syntaxhighlighter/shCore", "syntaxhighlighter/shBrushSql" %>
-      <%= javascript_include_tag "jquery/jquery.scrollfollow" %>
-    <% end %>
-
-    <% if @run_successfull %>
-      <div class="box success">SQL successfully deployed to database</div>
-    <% else %>
-      <div class="box error">Failed to deploy SQL to database (scripts may hasve been partially executed, see below)</div>
-    <% end %>
-  
     <% if @deployment_results.count > 0%>
-    <div class="box">
-      <div id="sql_show_controls_div"> <a id="sql_show_controls" onclick="sql_show_controls();">Show SQL</a></div>
-      <h3>SQL deployment results</h3>
-      
-      <div id="deployed_sql">
+      <div class="box">
+        <h3>SQL deployment results</h3>
+        <br>
         <% @deployment_results.each do |sql_result| %>
-          <br>
-          <% if sql_result[:success] %>
-            <% if sql_result[:run] %>
-              <h3 class="success">Executed <%=h sql_result[:sql_script][:file] %> successfully</h3>
+          <div class="executed_sql_box">
+            <% if sql_result[:success] %>
+              <% if sql_result[:run] %>
+                <h4 class="success">Executed <%=h sql_result[:sql_script][:file] %> successfully</h4>
+              <% else %>
+                <h4 class="notice">Script <%=h sql_result[:sql_script][:file] %> NOT executed due to previous errors</h4>
+              <% end %>
             <% else %>
-              <h3 class="notice">Script <%=h sql_result[:sql_script][:file] %> NOT executed due to previous errors</h3>
+              <h4 class="error">Failed to execute <%=h sql_result[:sql_script][:file] %></h4>
             <% end %>
-          <% else %>
-            <h3 class="error">Failed to execute <%=h sql_result[:sql_script][:file] %></h3>
-          <% end %>
-          <% unless sql_result[:success] %>
-            <div class="box error"><%= sql_result[:msg] %></div>
-            <% end %>
-          <pre  class="brush: sql">
-            <%=h sql_result[:sql_script][:sql] %>
-          </pre>
+            <% unless sql_result[:success] %>
+              <div class="box error"><%= sql_result[:msg] %></div>
+              <% end %>
+            <div class="executed_sql">
+              asdfsadf asdfas fdas fdasdf
+              <pre class=" brush: sql">
+                <%=h sql_result[:sql_script][:sql] %>
+              </pre>
+            </div>
+          </div>
         <% end %>
       </div>
-    </div>
     <% end %>
-    
   </div>
 <% end %>
 
@@ -51,15 +44,15 @@
   <fieldset>
     <legend>Deploy</legend>
       <div class="span-11">
-        <% if @version_info.first %>
+        <% if @version_info.last %>
           <p>
-            <b>Current deployed version:</b> <%=h @version_info.first.to_s %>
+            <b>Current deployed version:</b> <%=h @version_info.last.to_s %>
           </p>
           <p>
-            <b>Version creation date:</b> <%=h Time.at(@version_info.first.created).strftime('%Y-%m-%d %H:%M') %>
+            <b>Version creation date:</b> <%=h Time.at(@version_info.last.created).strftime('%Y-%m-%d %H:%M') %>
           </p>
           <p>
-            <b>Version description:</b> <%=h @version_info.first.description %>
+            <b>Version description:</b> <%=h @version_info.last.description %>
           </p>
         <% else %>
           <p>
@@ -69,8 +62,10 @@
       </div>
 
       <div class="span-11 last">
-        <p>
-          <b>All deployed versions:</b> <%=h @version_info.count %> versions
+        <div id="deployed_versions_box">
+          <p>
+            <b>All deployed versions:</b> <%=h @version_info.count %> versions
+          </p>
           <div id="all_deployed_versions">
             <% @version_info.each do |version| %>
               <p>
@@ -79,51 +74,20 @@
               </p>
             <% end %>
           </div>
-        </p>        
+        </div>
+              
       </div>
-    <div>   
     
     <br>    
     
     <div class="span-22 last">
       <div class="span-11">
-        <fieldset id="deploy_update_fieldset">
-          <legend>Update</legend>        
-            <%= form_tag(update_instance_schema_app_deploy_path(), :method => :post) do %>
-              <p>
-                <%= label_tag 'Target version' %><br />
-                <%= select_tag(:target_version, options_for_select(@update_versions)) %>
-              </p>
-              <p>
-                <%= submit_tag 'Deploy update', :class => 'clean_button' %>
-              </p>
-            <% end %>
-          </fieldset>
-        </div>
+        <%= render :partial => 'update_fieldset', :locals => {:update_versions => @update_versions } %>
+      </div>
     
-        <div class="span-11 last">
-          <fieldset id="deploy_rollback_fieldset">
-            <legend>Rollback</legend>        
-            <%= form_tag(rollback_instance_schema_app_deploy_path(), :method => :post) do %>
-              <p>
-                <%= label_tag 'Target version' %><br />
-                <%= select_tag(:target_version, options_for_select(@rollback_versions)) %>
-              </p>
-              <p>
-                <%= submit_tag 'Deploy rollback', :class => 'clean_button' %>
-              </p>
-            <% end %>
-            <br class="clear-both">
-          </fieldset>
-          <fieldset id="deploy_wipe_fieldset">
-            <legend>Wipe schema</legend>            
-            <%= form_tag(wipe_instance_schema_app_deploy_path(), :method => :post) do %>
-              <p>
-                <%= submit_tag 'Wipe schema', :class => 'clean_button wipe_schema_button' %>
-              </p>
-            <% end %>
-          </div>
-        </fieldset>
+      <div class="span-11 last">
+        <%= render :partial => 'rollback_fieldset', :locals => {:rollback_versions => @rollback_versions } %>
+        <%= render :partial => 'wipe_fieldset' %>
       </div>
   </fieldset>
 <div>

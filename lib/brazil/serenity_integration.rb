@@ -4,18 +4,18 @@ require 'cobravsmongoose'
 module Brazil
   class SerenityIntegration  
     
-      # identifiers is an array, use:
-      # :schema for oracle databases
-      # :port for mysql
-      def wipe_schema db_type, identifiers
+    # identifiers is an array, use:
+    # :schema for oracle databases
+    # :port for mysql
+    def wipe_schema db_type, identifier
       clnt = HTTPClient.new
       response = nil
       
       case db_type
         when DatabaseSchema::TYPE_ORACLE then
-          response = clnt.put("#{::AppConfig.serenity_url}#{::AppConfig.serenity_clean_action}/#{identifiers[:schema]}.xml")
+          response = clnt.put("#{::AppConfig.serenity_url}#{::AppConfig.serenity_clean_action}/#{identifier[:schema]}.xml")
         when DatabaseSchema::TYPE_MYSQL then
-          response = clnt.put("#{::AppConfig.serenity_url}#{::AppConfig.serenity_clean_action}/mysql:#{identifiers[:port]}.xml")
+          response = clnt.put("#{::AppConfig.serenity_url}#{::AppConfig.serenity_clean_action}/mysql:#{identifier[:port]}.xml")
       end
       doc = CobraVsMongoose.xml_to_hash(response.content)
       

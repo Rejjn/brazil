@@ -1,0 +1,12 @@
+        <fieldset id="deploy_update_fieldset">
+          <legend>Update</legend>        
+            <%= form_tag(update_instance_schema_app_deploy_path(), :method => :post) do %>
+              <p>
+                <%= label_tag 'Update to version' %><br />
+                <%= select_tag(:target_version, options_for_select(update_versions)) %>
+              </p>
+              <p>
+                <%= submit_tag 'Deploy update', :class => 'clean_button' %>
+              </p>
+            <% end %>
+          </fieldset>

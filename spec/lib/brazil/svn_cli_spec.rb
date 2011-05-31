@@ -2,7 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 
 require 'brazil/version_control/svn_cli'
 
-describe Brazil::VersionControl::SVNCLI do
+describe Brazil::VersionControl::SvnCli do
 
   SVN_URI = 'http://prsvn.ongame.com/svn/repos/test/brazil/rspec/'
   SVN_READ_USER = ''

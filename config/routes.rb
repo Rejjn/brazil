@@ -68,6 +68,9 @@ Brazil::Application.routes.draw do
     end
     
     resources :activities do
+      collection do
+        get :base_versions
+      end
       member do
         get :delete
         post :execute
@@ -83,16 +86,16 @@ Brazil::Application.routes.draw do
       resources :versions do
         member do
           get :delete
-          post :rollback
+          post :test_rollback
+          post :test_update
           post :upload
-          post :update
-          post :deploy
+          post :deployed
         end
       end
     end
   end
 
-  match 'deploy/:app/:schema/:db_instance/wipe' => 'deploy#wipe', :as => :wipe_instance_schema_app_deploy
+  match 'deploy/:app/:schema/:db_instance/wipe' => 'deploy#wipe', :as => :wipe_instance_schema_app_deploy, :via => 'post'
   match 'deploy/:app/:schema/:db_instance/rollback' => 'deploy#rollback', :as => :rollback_instance_schema_app_deploy, :via => 'post'
   match 'deploy/:app/:schema/:db_instance/update' => 'deploy#update', :as => :update_instance_schema_app_deploy, :via => 'post'
   match 'deploy/:app/:schema/:db_instance/credentials' => 'deploy#wipe_credentials', :as => :credentials_instance_schema_app_deploy

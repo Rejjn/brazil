@@ -1,0 +1,8 @@
+          <fieldset id="deploy_wipe_fieldset">
+            <legend>Wipe schema</legend>            
+            <%= form_tag(wipe_instance_schema_app_deploy_path(), :method => :post) do %>
+              <p>
+                <%= submit_tag 'Wipe schema', :class => 'clean_button wipe_schema_button' %>
+              </p>
+            <% end %>
+          </fieldset>
