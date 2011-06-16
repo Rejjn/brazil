@@ -20,3 +20,8 @@
   <%= f.label :db_type, 'Type' %><br />
   <%= f.select :db_type, DbInstance.db_types %>
 </p>
+
+<p>
+  <%= f.label :wipeable_schemas, 'Wipeable schemas' %><br />
+  <%= f.check_box :wipeable_schemas %>
+</p>

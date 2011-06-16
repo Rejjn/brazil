@@ -51,7 +51,7 @@ class DbInstance < ActiveRecord::Base
 
   def execute_sql(sql, username, password, schema)
     db = Brazil::DatabaseSchema.new(host, port, db_type, schema, username, password)
-    db.execute_sql(sql)
+    db.execute_sql_scripts(sql)
   end
 
   def deployed_versions(username, password, schema) 
