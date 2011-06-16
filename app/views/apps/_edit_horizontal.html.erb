@@ -7,7 +7,7 @@
     </div>
     <div class="span-12 last">
       <%= f.label :vc_path, 'Version Control Path (ex. /app_name/trunk/db)' %><br />
-      <iframe id="repo_browser" src="/repo_browser/?url=<%= app.vc_path %>" width="400" height="200" frameBorder="0" onload="brazil.repo_browser.set_url();">
+      <iframe id="repo_browser" src="/repo_browser/?url=<%= app.vc_path %>" width="400" height="200" frameBorder="0" onload="brazil.repo_browser.set_url(this, '#app_vc_path');">
         <p>Your browser does not support iframes.</p>
       </iframe>
       <%= f.text_field :vc_path, :class => 'span-12' %>
