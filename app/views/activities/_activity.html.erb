@@ -5,7 +5,7 @@
   </ul>
   <br class="clear"><br>
   <ul class="actions">
-    <% if activity.db_instance.wipeable_schemas %>
+    <% if activity.db_instance && activity.db_instance.wipeable_schemas %>
       <li class="attention"><%= button_to 'Reset', reset_app_activity_path(activity.app, activity), :class => 'reset_activity_button', :method => :post %></li>
     <% end %>    
     <li><%= button_to 'Execute all', execute_app_activity_path(activity.app, activity), :class => 'execute_activity_button', :method => :post %></li>

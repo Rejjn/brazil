@@ -42,9 +42,9 @@ class Activity < ActiveRecord::Base
 
   def execute
     begin
-      current_versions = db_instance.deployed_versions(dev_user, dev_password, dev_schema)
+      current_versions = db_instance_dev.deployed_versions(dev_user, dev_password, dev_schema)
       unless current_versions.last.to_s == base_version
-        db_instance.deploy_update(app, schema, dev_user, dev_password, dev_schema, base_version)
+        db_instance_dev.deploy_update(app, schema, dev_user, dev_password, dev_schema, base_version)
       end
       
       sql = []
@@ -52,7 +52,7 @@ class Activity < ActiveRecord::Base
         sql << {:source => change.to_s, :sql => change.sql, :change => change}
       end
   
-      run_successfull, deployment_results = db_instance.execute_sql(sql, dev_user, dev_password, dev_schema)
+      run_successfull, deployment_results = db_instance_dev.execute_sql(sql, dev_user, dev_password, dev_schema)
      
       deployment_results.each do |result|
         result[:sql_script][:change].update_attribute(:state, Change::STATE_EXECUTED) if result[:run]
@@ -77,4 +77,10 @@ class Activity < ActiveRecord::Base
   def to_s
     name
   end
+  
+  def db_instance_dev
+    return db_instance if db_instance && db_instance.dev?
+    raise Brazil::NoDBInstanceException, "#{self} has no #{DbInstance::ENV_DEV} database instance set. Use Edit Activity to set one."
+  end
+  
 end

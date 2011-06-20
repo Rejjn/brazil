@@ -184,6 +184,7 @@ class ActivitiesController < ApplicationController
       
       respond_to do |format|
         if request.xhr?
+          @change = @activity.changes.build
           format.html { render :partial => "changes/changes", :locals => {:activity => @activity, :change => @change, :deployment_results => @deployment_results}} 
         else 
           format.html { redirect_to app_activity_path(@app, @activity) }

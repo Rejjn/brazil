@@ -14,7 +14,7 @@ class Change < ActiveRecord::Base
 
   def execute
     prepared_sql = [{:source => to_s, :sql => sql}]
-    run_successfull, deployment_results = activity.db_instance.execute_sql(prepared_sql, activity.dev_user, activity.dev_password, activity.dev_schema)
+    run_successfull, deployment_results = db_instance_dev.execute_sql(prepared_sql, activity.dev_user, activity.dev_password, activity.dev_schema)
     update_attribute(:state, STATE_EXECUTED)
     
     [run_successfull, deployment_results]
@@ -27,7 +27,7 @@ class Change < ActiveRecord::Base
   private
 
   def db_instance_dev
-    return activity.db_instance if activity.db_instance.dev?
+    return activity.db_instance if activity.db_instance && activity.db_instance.dev?
     raise Brazil::NoDBInstanceException, "#{activity} has no #{DbInstance::ENV_DEV} database instance set. Use Edit Activity to set one."
   end
 
