@@ -1,7 +1,5 @@
 $(document).ready(function() {
-  brazil.move.scrollable('#app_forms');
-
-  brazil.flash.fadeout('#notice', 3000);
+  brazil.on_load.general();
 
   // Edit App name
   brazil.form.inline({
@@ -15,10 +13,4 @@ $(document).ready(function() {
     form_container: '#app_forms',
     inserted_fieldset: '#new_activity_fieldset'
   });
-
-  // TODO: Come back to this later
-  // brazil.manipulate.expand({
-  //   expand_button: '.view_all_activites',
-  //   expand_container: '.app'
-  // });
 });

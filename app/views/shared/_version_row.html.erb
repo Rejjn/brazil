@@ -1,0 +1,5 @@
+<tr class="<%=h "activity #{version.state}" %> <%= cycle 'odd', 'even', :name => 'version_cycle' %>">
+  <td><%= link_to version, app_activity_version_path(version.activity.app, version.activity, version) %></td>
+  <td><%= version.state %></td>
+  <td><%= version.created_at.to_s(:long) %></td>
+</tr>

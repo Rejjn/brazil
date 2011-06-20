@@ -1,3 +1,7 @@
+@import url('/stylesheets/syntaxhighlighter/shCore.css');
+@import url('/stylesheets/syntaxhighlighter/shThemeDefault.css');
+
+
 body {
   font-family: "Myriad Pro", "Lucida Grande", Helvetica, Tahoma, Arial, Sans-serif;
 }
@@ -70,13 +74,13 @@ a:hover {
   float:right;
 }
 
-.actions li a.disabled {
-  background: #ddd;
-  color: #333;
-  border-color: #999;
+.actions li a.loading, .actions li input.loading {
+  color: #333 !important;
+  border-color: #999 !important;
+  background: #ddd url('/images/ajax-loader-buttons.gif') no-repeat center right !important;
 }
 
-.actions li a.disabled img {
+.actions li a.loading img {
   position: relative;
   top: 2px;
   height: 1em;
@@ -91,19 +95,19 @@ a:hover {
   margin-right: 0px;
 }
 
-.actions li.destroy a {
+.actions li.destroy a, .actions li.destroy input {
   background:#FBE3E4;
   color:#8a1f11;
   border-color:#FBC2C4;
 }
 
-.actions li.attention a {
+.actions li.attention a, .actions li.attention input {
   background:#f5ef96;
   border-color:#d5cb33;
   color:#585415;
 }
 
-.actions li a {
+.actions li a, .actions li input {
   display:block;
   padding:2px 18px;
   border:1px solid #C6D880;
@@ -113,6 +117,8 @@ a:hover {
   -webkit-border-radius: 4px;
   border-radius: 4px;
   text-decoration:none;
+  font-size: 100%;
+  cursor: pointer;
 }
 
 textarea {
@@ -152,6 +158,11 @@ a.form_close {
 
 #brazil-release {
   float: right;
+}
+
+#current-user {
+  float: right;
+  margin-right: 25px;
 }
 
 #user-info {
@@ -359,4 +370,49 @@ div.visibilty_controlls {
 
 div.executed_sql {
   display: none;
+}
+
+.close_button {
+  float:right;
+}
+
+.button_to div {
+  white-space:nowrap;
+} 
+
+.box.change {
+  background:#f4f4f4;
+  border: 2px solid #888;
+  border-color:#888;
+}
+
+.box.change.saved h2 {
+  border: 3px solid #AD8C3E;
+  background:#FFCE5B;
+}
+
+.box.change.executed h2 {
+  border: 3px solid #6D924B;
+  background:#86B35C;
+  color:#FFF;
+}
+
+.item_meta {
+  float: left;
+}
+
+p.clear {
+  padding-top: 1em;
+}
+
+tr.db_instance.dev {
+  color: #AB3E1D;
+}
+
+tr.db_instance.test {
+  color: #AD8C3E;
+}
+
+tr.db_instance.prod {
+  color: #6D924B;
 }

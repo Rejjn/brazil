@@ -1,0 +1,5 @@
+<tr class="<%=h "activity #{change.state}" %> <%= cycle 'odd', 'even', :name => 'change_cycle' %>">
+  <td><%= change.developer %></td>
+  <td><%= change.state %></td>
+  <td><%= change.created_at.to_s(:long) %></td>
+</tr>

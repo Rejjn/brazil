@@ -1,14 +1,14 @@
 class DbInstancesController < ApplicationController
+  
+  respond_to :html, :xml
+  
   # GET /db_instances
   # GET /db_instances.xml
   def index
     @db_instances = DbInstance.all(:order => 'db_env, db_alias', :conditions => {:db_env => [DbInstance::ENV_DEV, DbInstance::ENV_TEST]})
     @db_instances_prod = DbInstance.all(:order => 'db_env, db_alias', :conditions => {:db_env => DbInstance::ENV_PROD})
 
-    respond_to do |format|
-      format.html # index.html.erb
-      format.xml  { render :xml => @db_instances }
-    end
+    respond_with @db_instances
   end
 
   # GET /db_instances/1
@@ -16,10 +16,7 @@ class DbInstancesController < ApplicationController
   def show
     @db_instance = DbInstance.find(params[:id])
 
-    respond_to do |format|
-      format.html # show.html.erb
-      format.xml  { render :xml => @db_instance }
-    end
+    respond_with @db_instance
   end
 
   # GET /db_instances/new
@@ -27,15 +24,14 @@ class DbInstancesController < ApplicationController
   def new
     @db_instance = DbInstance.new
 
-    respond_to do |format|
-      format.html # new.html.erb
-      format.xml  { render :xml => @db_instance }
-    end
+    respond_with @db_instance
   end
 
   # GET /db_instances/1/edit
   def edit
     @db_instance = DbInstance.find(params[:id])
+    
+    respond_with @db_instance
   end
 
   # POST /db_instances
@@ -43,16 +39,8 @@ class DbInstancesController < ApplicationController
   def create
     @db_instance = DbInstance.new(params[:db_instance])
 
-    respond_to do |format|
-      if @db_instance.save
-        flash[:notice] = 'Database instance was successfully created.'
-        format.html { redirect_to db_instances_path }
-        format.xml  { render :xml => @db_instance, :status => :created, :location => @db_instance }
-      else
-        format.html { render :action => "new" }
-        format.xml  { render :xml => @db_instance.errors, :status => :unprocessable_entity }
-      end
-    end
+    @db_instance.save
+    respond_with @db_instance
   end
 
   # PUT /db_instances/1

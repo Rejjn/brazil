@@ -74,6 +74,7 @@ Brazil::Application.routes.draw do
       member do
         get :delete
         post :execute
+        post :reset
       end
       
       resources :changes do

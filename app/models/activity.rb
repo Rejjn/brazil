@@ -4,13 +4,13 @@ class Activity < ActiveRecord::Base
   STATE_DEPLOYED = 'deployed'
 
   belongs_to :app
-  has_many :versions, :dependent => :destroy
+  has_one :version, :dependent => :destroy
   has_many :changes, :order => "created_at ASC", :dependent => :destroy
 
   belongs_to :db_instance
 
   validates_associated :db_instance
-  validates_presence_of :name, :schema, :dev_schema
+  validates_presence_of :name, :schema, :db_type, :dev_schema, :dev_user, :dev_password, :base_version
 
   # FIXME: Add before_save check state
 
@@ -38,6 +38,40 @@ class Activity < ActiveRecord::Base
 
   def vc_path
     "#{app.vc_path}/#{schema}/#{db_type.downcase}"
+  end
+
+  def execute
+    begin
+      current_versions = db_instance.deployed_versions(dev_user, dev_password, dev_schema)
+      unless current_versions.last.to_s == base_version
+        db_instance.deploy_update(app, schema, dev_user, dev_password, dev_schema, base_version)
+      end
+      
+      sql = []
+      changes.each do |change|
+        sql << {:source => change.to_s, :sql => change.sql, :change => change}
+      end
+  
+      run_successfull, deployment_results = db_instance.execute_sql(sql, dev_user, dev_password, dev_schema)
+     
+      deployment_results.each do |result|
+        result[:sql_script][:change].update_attribute(:state, Change::STATE_EXECUTED) if result[:run]
+      end
+      
+      return [run_successfull, deployment_results]
+    rescue => e
+      raise 
+    end
+  end
+
+  def reset
+    db_instance.wipe_schema(dev_user, dev_password, dev_schema)    
+    db_instance.deploy_update(app, schema, dev_user, dev_password, dev_schema, base_version)
+    
+    changes.each do |change|
+      change.update_attribute(:state, Change::STATE_SAVED)
+    end
+    
   end
 
   def to_s

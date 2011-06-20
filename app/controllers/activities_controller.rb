@@ -1,4 +1,7 @@
 class ActivitiesController < ApplicationController
+  
+  respond_to :html, :xml
+  
   # GET /apps/:app_id/activities
   # GET /apps/:app_id/activities.xml
   # GET /apps/:app_id/activities.atom
@@ -48,6 +51,8 @@ class ActivitiesController < ApplicationController
     @app = App.find(params[:app_id])
     @activity = @app.activities.build
 
+    @base_versions = ["No base version"]
+
     respond_to do |format|
       format.html do # new.html.erb
         render :layout => false if request.xhr?
@@ -60,6 +65,11 @@ class ActivitiesController < ApplicationController
   def edit
     @app = App.find(params[:app_id])
     @activity = @app.activities.find(params[:id])
+    
+    @vscm = Brazil::AppSchemaVersionControl.new(:vc_type => Brazil::AppSchemaVersionControl::TYPE_SUBVERSION, :vc_path => @app.vc_path, :vc_uri => ::AppConfig.vc_uri)    
+    @base_versions = @vscm.find_versions(@activity.schema)
+    @base_versions << "No base version" if @base_versions.count == 0
+    
     render :layout => false if request.xhr?
   end
 
@@ -83,6 +93,8 @@ class ActivitiesController < ApplicationController
         format.xml  { render :xml => @activity, :status => :created, :location => @activity }
       else
         format.html do
+          @base_versions = ['1_1_0']
+          
           if request.xhr?
             render :partial => 'new', :locals => {:activity => @activity, :app => @app}, :status => :unprocessable_entity
           else
@@ -99,6 +111,10 @@ class ActivitiesController < ApplicationController
   def update
     @app = App.find(params[:app_id])
     @activity = @app.activities.find(params[:id])
+
+    @vscm = Brazil::AppSchemaVersionControl.new(:vc_type => Brazil::AppSchemaVersionControl::TYPE_SUBVERSION, :vc_path => @app.vc_path, :vc_uri => ::AppConfig.vc_uri)    
+    @base_versions = @vscm.find_versions(params[:arg])
+    @base_versions << "No base version" if @base_versions.count == 0
 
     respond_to do |format|
       if @activity.update_attributes(params[:activity])
@@ -128,69 +144,119 @@ class ActivitiesController < ApplicationController
   # DELETE 
   def destroy
     @activity = Activity.find(params[:id])
-    @activity.destroy
-
-    respond_to do |format|
-      format.html { redirect_to(app_activities_url(params[:app_id])) }
-      format.xml  { head :ok }
+    
+    if params[:activity_app_delete_cancel]
+      redirect_to app_activity_path(@activity.app, @activity)
+      return
     end
+
+    @activity.destroy
+    respond_with(@activity)
   end
   
   def execute
+    @app = App.find(params[:app_id])
     @activity = Activity.find(params[:id])
-    
-    sql = ''
-    @activity.changes.each do |change|
-      sql << "\n" << change.sql
-    end
 
-    session[:sql_store] = Brazil::SessionSQLStorage.store_sql(sql)
-
-    flash[:notice] = 'Activity SQL successfully executed'
-    #flash[:error] = 'Error while executing activity SQL'
+    begin 
+      @run_successfull, @deployment_results = @activity.execute
     
-    sleep 1
-    
-    ## greate success
-    @activity.changes.each do |change|
-      change.update_attribute(:state, Change::STATE_EXECUTED)
-    end
-    
-    respond_to do |format|
-      format.html { render :partial => "changes/change", :collection => @activity.changes } #, :status => :unprocessable_entity
-      format.xml  { render :xml => @change }
+      if @run_successfull
+        flash[:notice] = 'Activity SQL successfully executed'
+      else
+        flash[:error] = 'Failed to fully execyte activity SQL (see below for more info)'
+      end
+      
+      respond_to do |format|
+        if request.xhr?
+          @change = @activity.changes.build
+          format.html { render :partial => "changes/changes", :locals => {:activity => @activity, :change => @change, :deployment_results => @deployment_results }}
+          #format.html { render :partial => "changes/changes", :collection => @activity.changes } 
+        else 
+          @change = @activity.changes.build
+          format.html { render :action => 'show' }
+        end
+        
+        format.xml  { render :xml => @activity }
+      end      
+    rescue => e
+      flash[:error] = "Error while executing activity SQL (#{e})"
+      
+      respond_to do |format|
+        if request.xhr?
+          format.html { render :partial => "changes/changes", :locals => {:activity => @activity, :change => @change, :deployment_results => @deployment_results}} 
+        else 
+          format.html { redirect_to app_activity_path(@app, @activity) }
+        end
+        
+        format.xml  { render :xml => @activity }
+      end
     end
   end
 
   def base_versions
     @app = App.find(params[:app_id])
-    
-    if params[:schema] && params[:db_type] 
-      repos_tools = Brazil::DeploySourceTools.new
-      repos_tools.configure(
-        ::AppConfig.vc_type, 
-        ::AppConfig.vc_uri, 
-        @app.vc_path + "/#{params[:schema]}/#{params[:db_type]}", 
-        ::AppConfig.vc_read_user, 
-        ::AppConfig.vc_read_password, 
-        ::AppConfig.vc_dir)
-        
-      repos_tools.init_src
-      @base_versions = repos_tools.find_versions
-      puts "hej"
-    else
-      @base_versions = []
-    end
-    
-    puts @base_versions.inspect
-    
     respond_to do |format|
-      format.html { render :layout =>  false } 
-      format.xml  { render :xml => @base_versions }
-    end
+      begin
+        @vscm = Brazil::AppSchemaVersionControl.new(:vc_type => Brazil::AppSchemaVersionControl::TYPE_SUBVERSION, :vc_path => @app.vc_path, :vc_uri => ::AppConfig.vc_uri)    
+        @base_versions = @vscm.find_versions(params[:arg])
+        
+        if @base_versions.count == 0
+          @base_versions << "No base version"
+        end
+        
+        format.html { render :layout =>  false } 
+        format.xml  { render :xml => @base_versions }
+      rescue => e
+        flash[:error] = "Failed to load base versions (#{e})"
+        @base_versions = []
+        format.html { render :layout =>  false, :status => :unprocessable_entity }
+        format.xml  { render :xml => 'Error', :status => :unprocessable_entity }
+      end
+    end      
   end 
 
   def delete
+    @app = App.find(params[:app_id])
+    @activity = @app.activities.find(params[:id])
+    
+    respond_with(@activity)
+  end
+
+
+  def reset
+    @app = App.find(params[:app_id])
+    @activity = @app.activities.find(params[:id])
+
+    respond_to do |format|
+      begin 
+        @activity.reset
+        
+        flash[:notice] = 'Activity developer database successfully reset.'
+        format.html do
+          if request.xhr?
+            @change = @activity.changes.build
+            render :partial => "changes/changes", :locals => {:activity => @activity, :change => @change}
+          else
+            redirect_to app_activity_path(@app, @activity)
+          end
+        end
+        format.xml  { head :ok }
+      rescue => e
+        flash[:error] = "Failed to reset activity developer database (#{e})."
+        
+        format.html do
+          if request.xhr?
+            @change = @activity.changes.build
+            render :partial => "changes/changes", :locals => {:activity => @activity, :change => @change}
+          else
+            @change = @activity.changes.build
+            render :action => "show"
+          end
+        end
+        format.xml  { render :xml => @activity.errors, :status => :unprocessable_entity }
+      end
+    end
     
   end
 

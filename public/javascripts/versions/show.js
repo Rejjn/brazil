@@ -1,8 +1,6 @@
 $(document).ready(function() {
 
-  brazil.flash.fadeout('#notice', 3000);
-
-  brazil.manipulate.syntax_highlight();
+  brazil.on_load.general();
 
   jQuery.each(jQuery('.attribute_warning'), function(index, value) {
     brazil.warning.show(jQuery(value))

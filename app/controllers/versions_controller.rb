@@ -6,12 +6,11 @@ class VersionsController < ApplicationController
   # GET /apps/:app_id/activities/:activity_id/versions.atom
   def index
     @activity = Activity.find(params[:activity_id])
-    @versions = @activity.versions.all
-    @version = @activity.versions.build
+    @version = @activity.version
 
     respond_to do |format|
       format.html # index.html.erb
-      format.xml  { render :xml => @versions }
+      format.xml  { render :xml => @version }
       format.atom # index.atom.builder
     end
   end
@@ -20,7 +19,7 @@ class VersionsController < ApplicationController
   # GET /apps/:app_id/activities/:activity_id/versions/1.xml
   def show
     @activity = Activity.find(params[:activity_id])
-    @version = @activity.versions.find(params[:id])
+    @version = @activity.version
 
     respond_to do |format|
       format.html # show.html.erb
@@ -32,7 +31,7 @@ class VersionsController < ApplicationController
   # GET /apps/:app_id/activities/:activity_id/versions/new.xml
   def new
     @activity = Activity.find(params[:activity_id])
-    @version = @activity.versions.build
+    @version = @activity.version
     @version.update_sql = Change.activity_sql(params[:activity_id])
 
     respond_to do |format|
@@ -237,8 +236,7 @@ class VersionsController < ApplicationController
     add_crumb 'Versions', app_activity_versions_path(app, activity)
 
     if params.has_key?(:id)
-      version = activity.versions.find(params[:id])
-      add_crumb version.to_s, app_activity_version_path(app, activity, version)
+      add_crumb activity.version.to_s, app_activity_version_path(app, activity, activity.version)
     end
   end
 end

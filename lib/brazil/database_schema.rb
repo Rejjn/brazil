@@ -13,8 +13,6 @@ module Brazil
     TYPE_ORACLE = 'oracle8'
     TYPE_POSTGRES = 'postgresql'  
   
-    attr_reader :source_tools
-  
     def initialize(db_host, db_port, db_type, db_schema, db_user, db_password)
       @db_host = db_host
       @db_port = db_port
@@ -25,24 +23,37 @@ module Brazil
     end
   
     def update_to_version(app_schema_vc, app_schema, target_version)
-      deploy_to_version(app_schema_vc, app_schema, target_version, :update)
+      execute_sql_scripts sql_for_deploy(version_information, app_schema_vc, app_schema, target_version, :update)
     end
     
     def rollback_to_version(app_schema_vc, app_schema, target_version)
-      deploy_to_version(app_schema_vc, app_schema, target_version, :rollback)
+      execute_sql_scripts sql_for_deploy(version_information, app_schema_vc, app_schema, target_version, :rollback)
     end
-    
-    # direction should be either :update or :rollback
-    def deploy_to_version(app_schema_vc, app_schema, target_version, direction) 
-      sql = sql_for_deploy(version_information, app_schema_vc, app_schema, target_version, direction)
   
+    #
+    # param sql format: 
+    # sql << {:source => file_name/change/activity, :sql => sql_script}
+    #
+    def execute_sql_scripts sql_scripts
+      
+      begin 
+        sql_scripts.each do |sql_script|
+          tmp = sql_script[:source]
+          tmp = sql_script[:sql]
+        end
+      rescue
+        raise ArgumentException, 'SQL script hash has the wrong format!'
+      end
+      
       sql_results = []
       sql_failed = false
-      sql.each do |sql_script|
+      sql_scripts.each do |sql_script|
         result = { :sql_script => sql_script, :msg => "Successfully executed", :success => true, :run => false }
         begin
           unless sql_failed
-            execute_sql(prepare_sql(@db_type, sql_script[:sql], @db_schema, @db_schema, @db_schema))
+            sql = prepare_sql(@db_type, sql_script[:sql], @db_schema, @db_schema, @db_schema)
+            result[:sql_script][:sql] = sql
+            execute_sql(sql)
             result[:run] = true
           end
         rescue
@@ -55,9 +66,9 @@ module Brazil
         sql_results << result
       end
       
-      return !sql_failed, sql_results
+      return !sql_failed, sql_results      
     end
-  
+    
     def execute_sql(sql, db_connection = nil)
       begin
         db_connection = create_db_connection unless db_connection
@@ -198,7 +209,7 @@ module Brazil
       selected_files.each do |file|
         sql_script = []
         file >> sql_script
-        sql << {:file => File.basename(file.to_s), :sql => sql_script}
+        sql << {:source => File.basename(file.to_s), :sql => sql_script}
       end
       
       sql

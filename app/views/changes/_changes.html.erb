@@ -1,0 +1,15 @@
+  <% if defined? deployment_results%>
+    <%= render :partial => "shared/executed_sql", :locals => {:deployment_results => deployment_results} %>
+  <% end %>
+
+  <div class="span-13 border">
+    <% unless activity.changes.all.empty? %>
+      <%= render :partial => "changes/change", :collection => activity.changes.all, :as => :change %>
+    <% else %>
+      &nbsp;
+    <% end %>
+  </div>
+  
+  <div id="activity_forms" class="span-11 last">
+    <%= render :partial => "changes/new", :locals => {:change => change, :activity => activity} %>
+  </div>

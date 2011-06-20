@@ -17,7 +17,6 @@ var brazil = function() {
         jQuery(settings.response_container).empty().append(responseText);
 
         settings.success();
-
         settings.done();
 
         jQuery(settings.show_form).show();
@@ -27,7 +26,6 @@ var brazil = function() {
         jQuery(settings.inserted_fieldset).replaceWith(XMLHttpRequest.responseText);
 
         settings.error();
-
         settings.done();
 
         form_insert_ajax_submit(options);
@@ -57,14 +55,12 @@ var brazil = function() {
             settings.form_container.replaceWith(responseText);
 
             settings.success();
-
             settings.done();
           },
           error: function(XMLHttpRequest, textStatus, errorThrown) {
             settings.form_container.empty().append(XMLHttpRequest.responseText);
 
             settings.error();
-
             settings.done();
 
             form_inline_ajax_submit(options);
@@ -83,6 +79,57 @@ var brazil = function() {
   }
 
   return {
+    on_load: {
+      general: function() {
+        brazil.flash.fadeout('#notice', 3000);
+        brazil.info.setup_close('#error');
+        brazil.manipulate.syntax_highlight();
+      },
+    },
+    current_id: {
+      app: function(id) {
+        if (typeof(id) != 'undefined') {
+          this.app_id = id;
+          return true;
+        }
+        
+        if (typeof(this.app_id) == 'undefined') { 
+          var url = window.location.href;
+          var app_id = url.substring(url.indexOf('apps/')+5, url.indexOf('/', url.indexOf('apps/')+5));
+          return app_id;
+        } else {
+          return this.app_id;      
+        }
+      },
+      activity: function(id) {
+        if (typeof(id) != 'undefined') {
+          this.activity_id = id;
+          return true;
+        }
+        
+        if (typeof(this.app_id) == 'undefined') { 
+          var url = window.location.href;
+          var activity_id = url.substring(url.indexOf('activities/')+11, url.indexOf('/', url.indexOf('activities/')+11));
+          return activity_id;
+        } else {
+          return this.activity_id;      
+        }
+      },
+      version: function(id) {
+        if (typeof(id) != 'undefined') {
+          this.version_id = id;
+          return true;
+        }
+        
+        if (typeof(this.app_id) == 'undefined') { 
+          var url = window.location.href;
+          var version_id = url.substring(url.indexOf('versions/')+9, url.indexOf('/', url.indexOf('versions/')+9));
+          return version_id;
+        } else {
+          return this.version_id;      
+        }
+      },
+    },
     repo_browser: {
       set_url: function(browser, input_element) {
         //jQuery(browser).load(function(){
@@ -110,7 +157,7 @@ var brazil = function() {
         jQuery.get('/flash/notice', function(response) {
           if (response != "") {
             jQuery(element).hide().empty().append(response).fadeIn('slow', function(){
-              setTimeout('jQuery("' + element + '").fadeOut()', 3000);
+              setTimeout('jQuery("' + element + '").fadeOut()', 4000);
             });
           }
         });
@@ -120,13 +167,14 @@ var brazil = function() {
         jQuery.get('/flash/error', function(response) {
           if (response != "") {
             jQuery(element).hide().empty().append(response).fadeIn('slow', function(){
-              setTimeout('jQuery("' + element + '").fadeOut()', 3000);
+              //setTimeout('jQuery("' + element + '").fadeOut()', 3000);
             });
+            brazil.info.setup_close(element);
           }
         });
       },
       fadeout: function(element, time) {
-        var i = 0;
+        setTimeout('jQuery("' + element + '").fadeOut()', time);
       },      
       discard: function() {
         jQuery.get('/flash/notice', function() {
@@ -163,6 +211,15 @@ var brazil = function() {
           return false;
         });
       },
+      setup_close: function(container, affected_element) {
+        affected_element = typeof(affected_element) != 'undefined' ? affected_element : container;
+
+        jQuery(container).prepend('<a href="#" class="close_button"><img src="/images/forms/x.gif" alt=""/></a>');
+        jQuery(container).find('.close_button').click(function() {
+          jQuery(affected_element).fadeOut();
+          return false;
+        });
+      } 
     },
     manipulate: {
       syntax_highlight: function() {
@@ -185,7 +242,58 @@ var brazil = function() {
         });
       }
     },
+    request : {
+      execute: function(options) {
+        var defaults = { button: '', method: '', response_container: '', success: function(){}, error: function(){}, done: function(){} };
+        var settings = jQuery.extend(defaults, options);
+
+        jQuery(settings.button).live('click', function(event) {
+          event.preventDefault();
+          button = jQuery(this);
+          
+          var form = jQuery(this).attr('form');
+          button.addClass('loading');
+          
+          jQuery.ajax({
+            url: form.action,
+            type: settings.method,
+            success: function(responseText, statusText) {
+              jQuery(settings.response_container).empty().append(responseText);
+              settings.success();
+              settings.done();
+              button.removeClass('loading');
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown) {
+              settings.error();
+              settings.done();
+              button.removeClass('loading');
+            },
+          });
+        });
+      },      
+    },
     form : {
+      update: function(options) {
+        var defaults = { trigger_element: '', trigger_event: '', target_element: '', url: '', success: function(){}, error: function(){}, done: function(){} };
+        var settings = jQuery.extend(defaults, options);
+
+        jQuery(settings.trigger_element).live(settings.trigger_event, function() {
+          jQuery.ajax({
+            url: settings.url,
+            type: 'GET',
+            data: "arg=" + jQuery(settings.trigger_element).val(),
+            success: function(responseText, statusText) {
+              jQuery(settings.target_element).empty().append(responseText);
+              settings.success();
+              settings.done();
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown) {
+              settings.error();
+              settings.done();
+            },
+          });
+        });
+      },
       inline: function(options) {
         var defaults = { show_form: '', form_container: '', success: function(){}, error: function(){}, done: function(){} };
         var settings = jQuery.extend(defaults, options);
@@ -212,7 +320,7 @@ var brazil = function() {
         var defaults = { show_form: '', form_container: '', inserted_fieldset: '', response_container: '', success: function(){}, error: function(){}, done: function(){} };
         var settings = jQuery.extend(defaults, options);
 
-        jQuery(settings.show_form).live("click", function() {
+        jQuery(settings.show_form).click(function() {
           jQuery(this).hide();
 
           jQuery.get(this.href, function(response) {
@@ -292,16 +400,3 @@ var brazil = function() {
     }
   }
 }();
-
-/*
-function sql_show_controls(){
-  if ($("#deployed_sql").is(":hidden")) {
-    $("#deployed_sql").slideDown("slow");
-    $("#sql_show_controls").html("Hide SQL");
-  }
-  else {
-    $("#deployed_sql").slideUp();
-    $("#sql_show_controls").html("Show SQL");
-  }
-}
-*/

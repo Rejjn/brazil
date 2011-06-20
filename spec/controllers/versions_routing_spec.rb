@@ -26,16 +26,20 @@ describe VersionsController do
       {:post => app_activity_version_path(1, 2, 3)}.should == {:post => '/apps/1/activities/2/versions/3'}
     end
 
-    it "should map 'rollback_app_activity_version_path(1, 2, 3)' to /apps/1/activities/2/versions/3/rollback" do
-      {:post => rollback_app_activity_version_path(1, 2, 3)}.should == {:post => '/apps/1/activities/2/versions/3/rollback'}
+    it "should map 'test_update_app_activity_version_path(1, 2, 3)' to /apps/1/activities/2/versions/3/test_update" do
+      {:post => test_update_app_activity_version_path(1, 2, 3)}.should == {:post => '/apps/1/activities/2/versions/3/test_update'}
+    end
+
+    it "should map 'test_rollback_app_activity_version_path(1, 2, 3)' to /apps/1/activities/2/versions/3/test_rollback" do
+      {:post => test_rollback_app_activity_version_path(1, 2, 3)}.should == {:post => '/apps/1/activities/2/versions/3/test_rollback'}
     end
 
     it "should map 'upload_app_activity_version_path(1, 2)' to /apps/1/activities/2/versions/3/upload" do
       {:post => upload_app_activity_version_path(1, 2, 3)}.should == {:post => '/apps/1/activities/2/versions/3/upload'}
     end
 
-    it "should map 'deploy_app_activity_version_path(1, 2)' to /apps/1/activities/2/versions/3/deploy" do
-      {:post => deploy_app_activity_version_path(1, 2, 3)}.should == {:post => '/apps/1/activities/2/versions/3/deploy'}
+    it "should map 'deploy_app_activity_version_path(1, 2)' to /apps/1/activities/2/versions/3/deployed" do
+      {:post => deployed_app_activity_version_path(1, 2, 3)}.should == {:post => '/apps/1/activities/2/versions/3/deployed'}
     end
   end
 
@@ -73,19 +77,23 @@ describe VersionsController do
     end
 
     it "should map POST /apps/1/activities/2/versions/3 to { :controller => 'versions', :action => 'update', :app_id => '1', :activity_id => '2', :id => '3' }" do
-      { :post => "/apps/1/activities/2/versions/3" }.should route_to(:controller => 'versions', :action => 'update', :app_id => '1', :activity_id => '2', :id => '3')
+      { :put => "/apps/1/activities/2/versions/3" }.should route_to(:controller => 'versions', :action => 'update', :app_id => '1', :activity_id => '2', :id => '3')
     end
 
-    it "should map POST /apps/1/activities/2/versions/3/rollback to { :controller => 'versions', :action => 'rollback', :app_id => '1', :activity_id => '2', :id => '3' }" do
-      { :post => "/apps/1/activities/2/versions/3/rollback" }.should route_to(:controller => 'versions', :action => 'rollback', :app_id => '1', :activity_id => '2', :id => '3')
+    it "should map POST /apps/1/activities/2/versions/3/test_update to { :controller => 'versions', :action => 'test_update', :app_id => '1', :activity_id => '2', :id => '3' }" do
+      { :post => "/apps/1/activities/2/versions/3/test_update" }.should route_to(:controller => 'versions', :action => 'test_update', :app_id => '1', :activity_id => '2', :id => '3')
+    end
+
+    it "should map POST /apps/1/activities/2/versions/3/test_rollback to { :controller => 'versions', :action => 'test_rollback', :app_id => '1', :activity_id => '2', :id => '3' }" do
+      { :post => "/apps/1/activities/2/versions/3/test_rollback" }.should route_to(:controller => 'versions', :action => 'test_rollback', :app_id => '1', :activity_id => '2', :id => '3')
     end
 
     it "should map POST /apps/1/activities/2/versions/3/upload to { :controller => 'versions', :action => 'upload', :app_id => '1', :activity_id => '2', :id => '3' }" do
       { :post => "/apps/1/activities/2/versions/3/upload" }.should route_to(:controller => 'versions', :action => 'upload', :app_id => '1', :activity_id => '2', :id => '3')
     end
     
-    it "should map POST /apps/1/activities/2/versions/3/deploy to { :controller => 'versions', :action => 'deploy', :app_id => '1', :activity_id => '2', :id => '3' }" do
-      { :post => "/apps/1/activities/2/versions/3/deploy" }.should route_to(:controller => 'versions', :action => 'deploy', :app_id => '1', :activity_id => '2', :id => '3')
+    it "should map POST /apps/1/activities/2/versions/3/deployed to { :controller => 'versions', :action => 'deployed', :app_id => '1', :activity_id => '2', :id => '3' }" do
+      { :post => "/apps/1/activities/2/versions/3/deployed" }.should route_to(:controller => 'versions', :action => 'deployed', :app_id => '1', :activity_id => '2', :id => '3')
     end
   end
 end

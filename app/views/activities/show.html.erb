@@ -5,16 +5,7 @@
 
 <%= render :partial => "shared/activity", :locals => {:activity => @activity} %>
 
-<%= render :partial => "shared/executed_sql", :locals => {} %>
-
-<div id="changes" class="span-13 border">
-  <% unless @activity.changes.all.empty? %>
-    <%= render :partial => "changes/change", :collection => @activity.changes.all %>
-  <% else %>
-    &nbsp;
-  <% end %>
+<div id="changes">
+  <%= render :partial => "changes/changes", :locals => {:activity => @activity, :change => @change, :deployment_results => @deployment_results} %>
 </div>
-
-<div id="activity_forms" class="span-11 last">
-  <%= render :partial => "changes/new", :locals => {:change => @change, :activity => @activity} %>
-</div>
+  

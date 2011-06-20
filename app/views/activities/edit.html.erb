@@ -2,7 +2,7 @@
   <legend>Editing <%=h @activity %></legend>
   <a href="#" class="form_close" style="display: none;"><img src="/images/forms/x.gif" /></a>
   <%= form_for(@activity, :url => app_activity_path(@app, @activity)) do |f| %>
-    <%= render :partial => "form", :locals => {:f => f, :app => @app} %>
+    <%= render :partial => "form", :locals => {:f => f, :app => @app, :base_versions => @base_versions} %>
     <p>
       <%= f.submit 'Save' %>
     </p>

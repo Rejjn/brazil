@@ -4,7 +4,7 @@
   <div class="span-23 last">
     <div class="head">
       <h3><%=h activity %></h3>
-      <% if activity_show_dev_actions(activity) %>
+      <% if activity_show_dev_actions(activity) && !defined? hide_buttons && !hide_buttons %>
         <%= link_to 'edit', edit_app_activity_path(activity.app, activity), :id => 'activity_edit_button' %>
       <% end %>
     </div>
@@ -24,12 +24,12 @@
       </div>
           
       <div class="span-6 info">
-        <span class="schema"><strong>Schema</strong> <%=h activity.schema %></span>
-        <span class="base_version attribute_warning" title="Repository has a newer version, you should consider changing base version"><strong>Base version</strong> 1.7.2</span>
+        <span class="schema"><strong>Schema</strong> <%= activity.schema %></span>
+        <span class="base_version"><strong>Base version</strong> <%= activity.base_version %></span>
       </div>
       
       <div class="span-6 info last">
-        <span class="db_type"><strong>DB Type</strong> <%=h activity.db_type %></span>
+        <span class="db_type"><strong>DB Type</strong> <%= activity.db_type %></span>
       </div>    
       
       <% if activity.state == Activity::STATE_DEVELOPMENT %>
@@ -39,7 +39,7 @@
         </div>
          
         <div class="span-6 info">
-          <span class="db attribute_warning" title="This database does not exist"><strong>DB Instance</strong> <%=h activity.db_instance %></span>
+          <span class="db"><strong>DB Instance</strong> <%=h activity.db_instance %></span>
           <span class="dev_user"><strong>User</strong> <%=h activity.dev_user %></span>
         </div>
         <div class="span-6 info last">
@@ -50,7 +50,9 @@
       </div>
   
     <div class="span-6 last">
-      <%= render :partial => "activities/activity", :locals => {:activity => activity} %>
+      <% unless defined? hide_buttons && !hide_buttons%>
+        <%= render :partial => "activities/activity", :locals => {:activity => activity} %>
+      <% end %>
     </div>
   </div>
 </div>

@@ -2,4 +2,10 @@
   <%= javascript_include_tag "syntaxhighlighter/shCore", "syntaxhighlighter/shBrushSql" %>
 <% end %>
 
+<% if defined? @deployment_results%>
+  <%= render :partial => "shared/executed_sql", :locals => {:deployment_results => @deployment_results} %>
+<% end %>
+
+<br class="clear"/>
+
 <%= render :partial => 'change', :locals => {:change => @change, :activity => @activity} %>

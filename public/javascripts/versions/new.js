@@ -1,6 +1,6 @@
 $(document).ready(function() {
 
-  brazil.manipulate.syntax_highlight();
+  brazil.on_load.general();
 
   brazil.version.update_assigned({ 
     version_bumps: '#version_bump', 

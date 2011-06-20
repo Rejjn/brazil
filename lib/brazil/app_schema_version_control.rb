@@ -59,8 +59,13 @@ module Brazil
     def find_versions schema
       case @vc_type
         when TYPE_SUBVERSION then
-          clnt = HTTPClient.new
-          vc_schema_html = clnt.get_content("#{@vc_uri}#{@vc_path}/#{schema}/#{find_schema_type(schema)}")
+          begin 
+            clnt = HTTPClient.new
+            vc_schema_html = clnt.get_content("#{@vc_uri}#{@vc_path}/#{schema}/#{find_schema_type(schema)}")
+         rescue HTTPClient::BadResponseError => e
+           # enjoy the silence
+           vc_schema_html = ""
+         end
          
           versions = []
           vc_schema_html.scan(/-(\w+_\w+_\w+)-update.sql"/) do |version|

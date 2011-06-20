@@ -1,0 +1,58 @@
+<fieldset class="delete">
+  <legend>Delete Activity</legend>
+
+  <h3>Are you sure you want to delete this Activity?</h3>
+  <hr class="space" />
+
+  <%= render :partial => 'shared/activity', :locals => { :activity => @activity, :hide_buttons => true } %>
+
+  <% if @activity.version %>
+    <h4>Deleting this activity will also delete the following version:</h4>
+    <div id="app-list" class="span-14 last">
+      <div class="app">
+        <table class="version-list">
+          <thead>
+            <tr>
+              <th>Version</th>
+              <th>State</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+  
+          <%= render :partial => 'shared/version_row', :locals => { :version => @activity.version } %>
+          <% reset_cycle('version_cycle') %>
+  
+        </table>
+      </div>
+    </div>
+  <% end %>
+  
+  <% unless @activity.changes.count == 0 %>
+    <h4>Deleting this activity will also delete the following changes:</h4>
+    <div id="app-list" class="span-14 last">
+      <div class="app">
+        <table class="version-list">
+          <thead>
+            <tr>
+              <th>Developer</th>
+              <th>State</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+  
+          <%= render :partial => 'shared/change_row', :collection => @activity.changes, :as => :change %>
+          <% reset_cycle('change_cycle') %>
+  
+        </table>
+      </div>
+    </div>
+    
+    <br class="clear"/>
+  <% end %>
+
+  <%= form_for([@app, @activity], :url => app_activity_path(@app, @activity), :html => {:method => :delete}) do |f| %>
+    <%= render :partial => 'shared/form_error', :locals => {:f => f} %>
+    <%= f.submit 'Delete Activity' %>
+    <%= f.submit 'Cancel', :id => 'activity_app_delete_cancel', :name => 'activity_app_delete_cancel' %>
+  <% end %>
+</fieldset>

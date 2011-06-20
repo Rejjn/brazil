@@ -17,18 +17,17 @@
           <div class="executed_sql_box">
             <% if sql_result[:success] %>
               <% if sql_result[:run] %>
-                <h4 class="success">Executed <%=h sql_result[:sql_script][:file] %> successfully</h4>
+                <h4 class="success">Executed <%=h sql_result[:sql_script][:source] %> successfully</h4>
               <% else %>
-                <h4 class="notice">Script <%=h sql_result[:sql_script][:file] %> NOT executed due to previous errors</h4>
+                <h4 class="notice">Script <%=h sql_result[:sql_script][:source] %> NOT executed due to previous errors</h4>
               <% end %>
             <% else %>
-              <h4 class="error">Failed to execute <%=h sql_result[:sql_script][:file] %></h4>
+              <h4 class="error">Failed to execute <%=h sql_result[:sql_script][:source] %></h4>
             <% end %>
             <% unless sql_result[:success] %>
               <div class="box error"><%= sql_result[:msg] %></div>
               <% end %>
             <div class="executed_sql">
-              asdfsadf asdfas fdas fdasdf
               <pre class=" brush: sql">
                 <%=h sql_result[:sql_script][:sql] %>
               </pre>

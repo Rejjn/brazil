@@ -1,3 +1,6 @@
 @import url('/stylesheets/syntaxhighlighter/shCore.css');
 @import url('/stylesheets/syntaxhighlighter/shThemeDefault.css');
 
+#all_deployed_versions {
+  display: none;
+}

@@ -1,0 +1,18 @@
+<fieldset class="delete">
+  <legend>Delete Change</legend>
+
+  <h3>Are you sure you want to delete this Change?</h3>
+  <hr class="space" />
+
+  <%= render :partial => 'changes/change', :locals => { :change => @change, :hide_buttons => true } %>
+
+  <% content_for :view_external_js do %>
+    <%= javascript_include_tag "syntaxhighlighter/shCore", "syntaxhighlighter/shBrushSql" %>
+  <% end %>
+
+  <%= form_for([@activity.app, @activity, @change], :url => app_activity_change_path(@activity.app, @activity, @change), :html => {:method => :delete}) do |f| %>
+    <%= render :partial => 'shared/form_error', :locals => {:f => f} %>
+    <%= f.submit 'Delete Change' %>
+    <%= f.submit 'Cancel', :id => 'change_activity_app_delete_cancel', :name => 'change_activity_app_delete_cancel' %>
+  <% end %>
+</fieldset>

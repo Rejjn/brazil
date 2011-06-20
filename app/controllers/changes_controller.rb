@@ -1,5 +1,8 @@
 
 class ChangesController < ApplicationController
+
+  respond_to :html, :xml
+    
   # GET /apps/:app_id/activities/:activity_id/changes.xml
   def index
     @activity = Activity.find(params[:activity_id])
@@ -37,26 +40,22 @@ class ChangesController < ApplicationController
     @activity = Activity.find(params[:activity_id])
     @change = @activity.changes.build(params[:change])
     @change.developer = session[:user]
-
-    if params[:create_change_execute_button]
-      session[:sql_store] = Brazil::SessionSQLStorage.store_sql(@change.sql)
-      @change.state = Change::STATE_EXECUTED
-    else
-      @change.state = Change::STATE_SAVED
-    end
-
-    success = @change.valid? 
-    success, sql = @change.use_sql(@change.sql, params[:db_username], params[:db_password]) if success
-    success = @change.save if success
+    @change.state = Change::STATE_SAVED
     
     respond_to do |format|
-      if success 
+      if @change.save
+
+        if params[:create_change_execute_button]
+          @run_successfull, @deployment_results = @change.execute()
+        end
+        
         flash[:notice] = 'Database change was successfully created.'
         format.html do
           if request.xhr?
-            render :partial => "change", :collection => @activity.changes
+            @change = @activity.changes.build
+            render :partial => "changes", :locals => {:activity => @activity, :change => @change, :deployment_results => @deployment_results}
           else
-            redirect_to app_activity_path(@activity.app, @activity)
+            render :action => 'show'
           end
         end
         format.xml  { render :xml => @change, :status => :created, :location => app_activity_change_path(@activity.app, @activity, @change) }
@@ -94,19 +93,20 @@ class ChangesController < ApplicationController
     @activity = Activity.find(params[:activity_id])
     @change = @activity.changes.find(params[:id])
     @change.attributes = params[:change]
-
-    if params[:edit_change_execute_submit]
-      @change.state = Change::STATE_EXECUTED
-    else
-      @change.state = Change::STATE_SAVED
-    end
-
+    @change.state = Change::STATE_SAVED
+    
     respond_to do |format|
-      if @change.valid? && @change.use_sql(@change.sql, params[:db_username], params[:db_password]) && @change.save
+      if @change.save
+        
+        if params[:create_change_execute_button]
+          @run_successfull, @deployment_results = @change.execute()
+        end        
+        
         flash[:notice] = 'Change was successfully updated.'
         format.html do
           if request.xhr?
-            render :partial => "change", :collection => @activity.changes
+            @change = @activity.changes.build
+            render :partial => "changes", :locals => {:activity => @activity, :change => @change, :deployment_results => @deployment_results}
           else
             redirect_to app_activity_path(@activity.app, @activity)
           end
@@ -132,34 +132,62 @@ class ChangesController < ApplicationController
   def destroy
     @change = Change.find(params[:id])
     @activity = @change.activity
-    @change.destroy
 
-    flash[:notice] = 'Change successfully deleted'
-
-    respond_to do |format|
-      format.html { redirect_to(app_activity_url(@activity.app, @activity)) }
-      format.xml  { head :ok }
+    if params[:change_activity_app_delete_cancel]
+      redirect_to app_activity_path(@activity.app, @activity)
+      return
     end
+
+    @change.destroy
+    flash[:notice] = 'Change successfully deleted'
+    respond_with([@activity.app, @activity])
   end
 
   def execute
     @activity = Activity.find(params[:activity_id])
     @change = @activity.changes.find(params[:id])
-    @change.state = Change::STATE_EXECUTED
-    @change.save
-    
     @executed_change_id = @change.id
 
-    session[:sql_store] = Brazil::SessionSQLStorage.store_sql(@change.sql)
-
-    flash[:notice] = 'Change SQL successfully executed'
+    begin 
+      @run_successfull, @deployment_results = @change.execute
     
-    sleep 3
-    
-    respond_to do |format|
-      format.html { render :partial => "change", :collection => @activity.changes } #, :status => :unprocessable_entity
-      format.xml  { render :xml => @change }
+      if @run_successfull
+        flash[:notice] = 'Change SQL successfully executed'
+      else
+        flash[:error] = 'Failed to fully execute change SQL (see above for more info)'
+      end
+      
+      respond_to do |format|
+        if request.xhr?
+          @change = @activity.changes.build
+          format.html { render :partial => "changes/changes", :locals => {:activity => @activity, :change => @change, :deployment_results => @deployment_results }}
+        else 
+          format.html { render :action => 'show' }
+        end
+        
+        format.xml  { render :xml => @change }
+      end      
+    rescue => e
+      flash[:error] = "Error while executing activity SQL (#{e})"
+      
+      respond_to do |format|
+        if request.xhr?
+          @change = @activity.changes.build
+          format.html { render :partial => "changes/changes", :locals => {:activity => @activity, :change => @change, :deployment_results => @deployment_results}} 
+        else 
+          format.html { render :action => 'show' }
+        end
+        
+        format.xml  { render :xml => @change }
+      end
     end
+  end
+
+  def delete
+    @activity = Activity.find(params[:activity_id])
+    @change = @activity.changes.find(params[:id])
+
+    respond_with(@change)
   end
 
   private
