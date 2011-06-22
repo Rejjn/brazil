@@ -6,7 +6,7 @@
 
   <%= render :partial => 'shared/activity', :locals => { :activity => @activity, :hide_buttons => true } %>
 
-  <% if @activity.version %>
+  <% @activity.versions.each do |version| %>
     <h4>Deleting this activity will also delete the following version:</h4>
     <div id="app-list" class="span-14 last">
       <div class="app">
@@ -19,13 +19,14 @@
             </tr>
           </thead>
   
-          <%= render :partial => 'shared/version_row', :locals => { :version => @activity.version } %>
+          <%= render :partial => 'shared/version_row', :locals => { :version => version } %>
           <% reset_cycle('version_cycle') %>
-  
         </table>
       </div>
     </div>
   <% end %>
+  
+  <br class="clear"/>
   
   <% unless @activity.changes.count == 0 %>
     <h4>Deleting this activity will also delete the following changes:</h4>

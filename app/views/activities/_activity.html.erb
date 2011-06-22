@@ -1,7 +1,10 @@
-<% if activity_show_dev_actions(activity) %>
   <ul class="actions">
     <li class="destroy nomargin"><%= link_to 'Delete', delete_app_activity_path(activity.app, activity), :class => 'delete_activity_button', :confirm =>  delete_warning_text(activity), :method => :delete %></li>
-    <li><%= link_to 'Create Version', new_app_activity_version_path(activity.app, activity), :class => 'create_version_button' %></li>
+    <% if activity_show_dev_actions(activity) %>
+      <li><%= link_to 'Create Version', new_app_activity_version_path(activity.app, activity), :class => 'create_version_button' %></li>
+    <% else %>
+      <li><%= link_to 'Show versions', app_activity_versions_path(activity.app, activity), :class => 'show_versions_button' %></li>
+    <% end %>
   </ul>
   <br class="clear"><br>
   <ul class="actions">
@@ -10,4 +13,3 @@
     <% end %>    
     <li><%= button_to 'Execute all', execute_app_activity_path(activity.app, activity), :class => 'execute_activity_button', :method => :post %></li>
   </ul>
-<% end %>

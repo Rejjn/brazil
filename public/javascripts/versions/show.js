@@ -3,9 +3,10 @@ $(document).ready(function() {
   brazil.on_load.general();
 
   jQuery.each(jQuery('.attribute_warning'), function(index, value) {
-    brazil.warning.show(jQuery(value))
+    //brazil.warning.show(jQuery(value))
   });
-  
+
+/*  
   jQuery.each(jQuery('.sql_tested_oki'), function(index, value) {
     brazil.element.show({ 
       link_html: '<a href="#">Show Form</a>', 
@@ -21,6 +22,6 @@ $(document).ready(function() {
     to_show: jQuery('.preparation'), 
     button_container: jQuery('.preparation').parent(), 
   });
-
+*/
   
 });

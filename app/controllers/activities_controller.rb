@@ -9,6 +9,7 @@ class ActivitiesController < ApplicationController
     @app = App.find(params[:app_id])
     @activities = @app.activities.all(:order => 'updated_at DESC')
     @activity = @app.activities.build
+    @base_versions = ["No base version"]
 
     respond_to do |format|
       format.html do # index.html.erb
@@ -50,7 +51,6 @@ class ActivitiesController < ApplicationController
   def new
     @app = App.find(params[:app_id])
     @activity = @app.activities.build
-
     @base_versions = ["No base version"]
 
     respond_to do |format|

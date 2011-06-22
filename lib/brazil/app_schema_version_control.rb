@@ -41,7 +41,7 @@ module Brazil
       end
     end  
   
-    def find_next_schema_version schema
+    def find_next_schema_version schema, version_bump
       case @vc_type
         when TYPE_SUBVERSION then
           versions = find_versions(schema).reverse!
@@ -50,7 +50,7 @@ module Brazil
             return 
           end  
       
-          return versions[0].next.to_s
+          return versions[0].next
         else
           raise AppSchemaVersionControlException, "no such version control type available"
       end
@@ -88,6 +88,10 @@ module Brazil
         else
           raise AppSchemaVersionControlException, "no such version control type available"
       end
+    end
+  
+    def valid_next_version? schema, version
+      true
     end
   
     def vc_working_copy

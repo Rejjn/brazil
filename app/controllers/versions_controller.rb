@@ -1,3 +1,6 @@
+
+require 'brazil/schema_revision'
+
 class VersionsController < ApplicationController
   helper_method :create_update_sql, :create_rollback_sql
 
@@ -6,7 +9,7 @@ class VersionsController < ApplicationController
   # GET /apps/:app_id/activities/:activity_id/versions.atom
   def index
     @activity = Activity.find(params[:activity_id])
-    @version = @activity.version
+    @versions = @activity.versions
 
     respond_to do |format|
       format.html # index.html.erb
@@ -19,7 +22,7 @@ class VersionsController < ApplicationController
   # GET /apps/:app_id/activities/:activity_id/versions/1.xml
   def show
     @activity = Activity.find(params[:activity_id])
-    @version = @activity.version
+    @version = Version.find(params[:id])
 
     respond_to do |format|
       format.html # show.html.erb
@@ -31,8 +34,14 @@ class VersionsController < ApplicationController
   # GET /apps/:app_id/activities/:activity_id/versions/new.xml
   def new
     @activity = Activity.find(params[:activity_id])
-    @version = @activity.version
+    @version = @activity.versions.build
     @version.update_sql = Change.activity_sql(params[:activity_id])
+    @version.rollback_sql = Change.activity_suggested_rollback_sql(params[:activity_id]) 
+    @version_bump_type = Brazil::SchemaRevision::TYPE_MINOR
+    
+    asvc = Brazil::AppSchemaVersionControl.new(:vc_type => Brazil::AppSchemaVersionControl::TYPE_SUBVERSION, :vc_path => @activity.app.vc_path, :vc_uri => ::AppConfig.vc_uri, :vc_tmp_dir => ::AppConfig.vc_dir)
+    @current_lastest = asvc.find_versions(@activity.schema).last
+    @new_version = asvc.find_next_schema_version(@activity.schema, @version_bump_type)
 
     respond_to do |format|
       format.html # new.html.erb
@@ -44,13 +53,16 @@ class VersionsController < ApplicationController
   def edit
     @activity = Activity.find(params[:activity_id])
     @version = @activity.versions.find(params[:id])
+    
+    asvc = Brazil::AppSchemaVersionControl.new(:vc_type => Brazil::AppSchemaVersionControl::TYPE_SUBVERSION, :vc_path => @activity.app.vc_path, :vc_uri => ::AppConfig.vc_uri, :vc_tmp_dir => ::AppConfig.vc_dir)
+    @current_lastest = asvc.find_versions(@activity.schema).last
   end
 
   # POST /apps/:app_id/activities/:activity_id/versions.format
   def create
     @activity = Activity.find(params[:activity_id])
     @version = @activity.versions.build(params[:version])
-    @version.init_schema_version
+    @version.set_schema_version params[:new_version]['major'], params[:new_version]['minor'], params[:new_version]['patch']
 
     respond_to do |format|
       if @version.errors.empty? && @version.save
@@ -59,6 +71,11 @@ class VersionsController < ApplicationController
         format.xml { render :xml => @version, :status => :created, :location => app_activity_version_path(@activity.app, @activity, @version) }
         format.json { render :json => @version, :status => :created, :location => app_activity_version_path(@activity.app, @activity, @version) }
       else
+        @version_bump_type = Brazil::SchemaRevision::TYPE_MINOR
+        asvc = Brazil::AppSchemaVersionControl.new(:vc_type => Brazil::AppSchemaVersionControl::TYPE_SUBVERSION, :vc_path => @activity.app.vc_path, :vc_uri => ::AppConfig.vc_uri, :vc_tmp_dir => ::AppConfig.vc_dir)
+        @current_lastest = asvc.find_versions(@activity.schema).last
+        @new_version = asvc.find_next_schema_version(@activity.schema, @version_bump_type)
+        
         format.html { render :action => "new" }
         format.xml  { render :xml => @version.errors, :status => :unprocessable_entity }
         format.json { render :json => @version.errors, :status => :unprocessable_entity }
@@ -72,8 +89,7 @@ class VersionsController < ApplicationController
     @version = @activity.versions.find(params[:id])
     @version.attributes = params[:version]
 
-    updated_schema_version = [params[:schema_version_major], params[:schema_version_minor], params[:schema_version_patch]].join('_')
-    @version.update_schema_version(updated_schema_version, params[:db_username], params[:db_password])
+    @version.set_schema_version params[:new_version]['major'], params[:new_version]['minor'], params[:new_version]['patch']
 
     respond_to do |format|
       if @version.errors.empty? && @version.save
@@ -90,7 +106,7 @@ class VersionsController < ApplicationController
   end
 
   # PUT /apps/:app_id/activities/:activity_id/versions/1/update.format
-  def update
+  def test_update
     @activity = Activity.find(params[:activity_id])
     @version = @activity.versions.find(params[:id])
     if (Float(params[:test_db_instance_id]) != nil rescue false)
@@ -116,7 +132,7 @@ class VersionsController < ApplicationController
   end
 
   # PUT /apps/:app_id/activities/:activity_id/versions/1/rollback.format
-  def rollback
+  def test_rollback
     @activity = Activity.find(params[:activity_id])
     @version = @activity.versions.find(params[:id])
 
@@ -236,7 +252,8 @@ class VersionsController < ApplicationController
     add_crumb 'Versions', app_activity_versions_path(app, activity)
 
     if params.has_key?(:id)
-      add_crumb activity.version.to_s, app_activity_version_path(app, activity, activity.version)
+      version = activity.versions.find(params[:id])
+      add_crumb version.to_s, app_activity_version_path(app, activity, version)
     end
   end
 end

@@ -49,6 +49,11 @@ class DbInstance < ActiveRecord::Base
     db.rollback_to_version(asvc, app_schema, target_version)
   end
 
+  def suggest_rollback_sql update_sql
+    db = Brazil::DatabaseSchema.new(host, port, db_type, 'schema', 'username', 'password')
+    db.suggest_rollback_sql(update_sql)
+  end
+
   def execute_sql(sql, username, password, schema)
     db = Brazil::DatabaseSchema.new(host, port, db_type, schema, username, password)
     db.execute_sql_scripts(sql)

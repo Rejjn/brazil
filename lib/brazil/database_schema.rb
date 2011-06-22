@@ -129,6 +129,59 @@ module Brazil
       return true
     end
   
+    def suggest_rollback_sql update_sql
+      rollback_sql = "-- ** IMPORTANT!! **\n-- THIS IS ONLY A SUGGESTION, YOU NEED TO EDIT IT TO ENSURE THAT IT WILL WORK PROPERLY !\n\n"
+      
+      case @db_type
+        when TYPE_MYSQL
+
+        when TYPE_ORACLE 
+          sql_by_statement = update_sql.split(/;/)
+    
+          sql_by_statement.each do |sql_statement|
+            found_match = false
+            
+            sql_statement.scan(/create (table|index|SEQUENCE|CONSTRAINT) ([\w_\-\d]+\.[\w_\-\d]+)/i) do |m|
+              found_match = true
+              rollback_sql << "DROP #{m[0]} #{m[1]};\n\n"
+            end
+            
+            sql_statement.scan(/comment on (table|column) ([\w_\-\d]+\.[\w_\-\d]+)/i) do |m|
+              found_match = true
+              #we don't rollback comments...
+            end
+            
+            sql_statement.scan(/grant ([SELECT|INSERT|UPDATE|DELETE|, ]+) ON ([\w_\-\d]+\.[\w_\-\d]+) TO ([\w_\-\d]+)/i) do |m|
+              found_match = true
+              rollback_sql << "REVOKE #{m[0]} ON #{m[1]} FROM #{m[2]};\n\n"
+            end
+            
+            sql_statement.scan(/insert into ([\w_\-\d]+\.[\w_\-\d, ]+)\s*\((.+?)\) VALUES\s*\((.*)\)/i) do |m|
+              keys = m[1].split(',')
+              values = m[2].split(',')
+              
+              if keys.count == values.count 
+                found_match = true
+              
+                where = ""
+                keys.each do |key|
+                  where << key + " = " + values.shift + ' AND '
+                end
+              
+                rollback_sql << "DELETE FROM #{m[0]} WHERE #{where[0...-5]};\n\n"
+              end
+            end
+            
+            unless found_match
+              rollback_sql << "-- ** ADD ROLLBACK FOR: **\n-- " + sql_statement.strip.gsub(/\n/, "\n-- ") + ";\n\n"
+            end
+            
+          end
+      end
+      
+      rollback_sql
+    end
+  
     protected
   
     def create_db_connection
@@ -140,28 +193,28 @@ module Brazil
   
       connection = nil
       case @db_type
-      when TYPE_MYSQL
-        begin
-          retried = false
-          connection = DBI.connect("DBI:Mysql:database=#{@db_schema};host=#{@db_host};port=#{@db_port}", @db_user, @db_password)
-        rescue DBI::DatabaseError => exception
-          if exception.to_s =~ /unknown database/i && !retried
-            none_db_connection = DBI.connect("DBI:Mysql:host=#{@db_host};port=#{@db_port}", @db_user, @db_password)
-            execute_sql("CREATE DATABASE #{@db_schema}", none_db_connection)
-            retried = true
-            retry
+        when TYPE_MYSQL
+          begin
+            retried = false
+            connection = DBI.connect("DBI:Mysql:database=#{@db_schema};host=#{@db_host};port=#{@db_port}", @db_user, @db_password)
+          rescue DBI::DatabaseError => exception
+            if exception.to_s =~ /unknown database/i && !retried
+              none_db_connection = DBI.connect("DBI:Mysql:host=#{@db_host};port=#{@db_port}", @db_user, @db_password)
+              execute_sql("CREATE DATABASE #{@db_schema}", none_db_connection)
+              retried = true
+              retry
+            end
           end
-        end
-        connection.do('SET NAMES utf8') if connection
-          
-      # when TYPE_ODBC
-      when TYPE_ORACLE
-        oracle_host, oracle_instance = @db_host.split('/')
-        connection = DBI.connect("DBI:OCI8://#{oracle_host}:#{@db_port}/#{oracle_instance}", @db_user, @db_password)
-      when TYPE_POSTGRES
-        connection = DBI.connect("DBI:Pg:database=#{@db_schema};host=#{@db_host};port=#{@db_port}", @db_user, @db_password)
-      else
-        raise Brazil::UnknownDBTypeException, "Trying to create connection for unsupported DB Type: #{@db_type}"
+          connection.do('SET NAMES utf8') if connection
+            
+        # when TYPE_ODBC
+        when TYPE_ORACLE
+          oracle_host, oracle_instance = @db_host.split('/')
+          connection = DBI.connect("DBI:OCI8://#{oracle_host}:#{@db_port}/#{oracle_instance}", @db_user, @db_password)
+        when TYPE_POSTGRES
+          connection = DBI.connect("DBI:Pg:database=#{@db_schema};host=#{@db_host};port=#{@db_port}", @db_user, @db_password)
+        else
+          raise Brazil::UnknownDBTypeException, "Trying to create connection for unsupported DB Type: #{@db_type}"
       end
   
       if connection.nil?

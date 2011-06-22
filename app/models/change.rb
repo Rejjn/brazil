@@ -9,9 +9,15 @@ class Change < ActiveRecord::Base
   before_save :check_correct_state, :mark_activity_updated
 
   def self.activity_sql(activity_id)
-    Change.all(:order => 'created_at ASC', :conditions => {:activity_id => activity_id, :state => [Change::STATE_EXECUTED, Change::STATE_SAVED]}).collect {|change| change.sql}.join("\n")
+    Change.all(:order => 'created_at ASC', :conditions => {:activity_id => activity_id, :state => [Change::STATE_EXECUTED, Change::STATE_SAVED]}).collect {|change| change.sql}.join("\n\n")
   end
 
+  def self.activity_suggested_rollback_sql(activity_id)
+    activity = Activity.find(activity_id)
+    update_sql = Change.all(:order => 'created_at ASC', :conditions => {:activity_id => activity_id, :state => [Change::STATE_EXECUTED, Change::STATE_SAVED]}).collect {|change| change.sql}.join("\n\n")
+    activity.db_instance_dev.suggest_rollback_sql update_sql
+  end
+  
   def execute
     prepared_sql = [{:source => to_s, :sql => sql}]
     run_successfull, deployment_results = db_instance_dev.execute_sql(prepared_sql, activity.dev_user, activity.dev_password, activity.dev_schema)

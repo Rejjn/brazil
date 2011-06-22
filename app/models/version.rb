@@ -6,9 +6,7 @@ class Version < ActiveRecord::Base
   STATE_MERGED = 'merged'
 
   belongs_to :activity
-
-  has_many :db_instance_version
-  has_many :db_instances, :through => :db_instance_version
+  belongs_to :db_instance
 
   validates_presence_of :update_sql, :rollback_sql, :schema_version
   validates_inclusion_of :create_schema_version, :in => [true, false]
@@ -26,10 +24,10 @@ class Version < ActiveRecord::Base
     
     return db_update_sql
   rescue Brazil::DBException => db_exception
-    errors.add_to_base("SQL: #{db_exception}")
+    errors.add(:base, "SQL: #{db_exception}")
     return db_exception.data
   rescue Brazil::VersionControlException => vc_exception
-    errors.add_to_base("Version Control: could not add Version update and rollback SQL (#{vc_exception})")
+    errors.add(:base, "Version Control: could not add Version update and rollback SQL (#{vc_exception})")
   end
 
   def rollback_from_test(versioned_rollback_sql, db_schema, test_db_instance, test_db_schema, test_db_username, test_db_password, vc_username, vc_password)
@@ -41,28 +39,27 @@ class Version < ActiveRecord::Base
 
     return db_rollback_sql
   rescue Brazil::DBException => db_exception
-    errors.add_to_base("SQL: #{db_exception}")
+    errors.add(:base, "SQL: #{db_exception}")
     return db_exception.data
   rescue Brazil::VersionControlException => vc_exception
-    errors.add_to_base("Version Control: could not delete Version update and rollback SQL (#{vc_exception})")
+    errors.add(:base, "Version Control: could not delete Version update and rollback SQL (#{vc_exception})")
   end
 
 
-  def init_schema_version
+  def set_schema_version major, minor, patch
     begin
-      vc_tools = Brazil::VersionControlTools.new
-      vc_tools.configure(Brazil::VersionControlTools::TYPE_SVN, ::AppConfig.vc_uri, activity.vc_path, ::AppConfig.vc_read_user, ::AppConfig.vc_read_password, ::AppConfig.vc_dir)
-
-      next_schema_version = vc_tools.find_next_schema_version
+      next_schema_version = Brazil::SchemaRevision.new(major, minor, patch) 
+      asvc = Brazil::AppSchemaVersionControl.new(:vc_type => Brazil::AppSchemaVersionControl::TYPE_SUBVERSION, :vc_path => activity.app.vc_path, :vc_uri => ::AppConfig.vc_uri, :vc_tmp_dir => ::AppConfig.vc_dir)
+      raise AppSchemaVersionControlException, 'That version is not a valid next version for that schema!' unless asvc.valid_next_version? activity.schema, next_schema_version
     rescue => exception
       unless exception.to_s =~ /reason_phrase=\"Not Found\"/ 
-        errors.add_to_base("Could not lookup version for schema '#{schema}' (#{exception})")
+        errors.add(:base, "Could not lookup version for schema '#{schema}' (#{exception})")
         return
       end
     end
     
     if next_schema_version
-      self.schema_version = next_schema_version
+      self.schema_version = next_schema_version.to_s
       self.create_schema_version = false
     else
       self.schema_version = '1_0_0'
@@ -70,43 +67,12 @@ class Version < ActiveRecord::Base
     end
   end
 
-
-  def update_schema_version(updated_schema_version, db_username, db_password)
-    begin
-      vc_tools = Brazil::VersionControlTools.new
-      vc_tools.configure(Brazil::VersionControlTools::TYPE_SVN, ::AppConfig.vc_uri, activity.vc_path, ::AppConfig.vc_read_user, ::AppConfig.vc_read_password, ::AppConfig.vc_dir)
-      
-      next_schema_version = vc_tools.find_next_schema_version
-    rescue => exception
-      unless exception.to_s =~ /reason_phrase=\"Not Found\"/ 
-        errors.add_to_base("Could not lookup version for schema '#{schema}' (#{exception})")
-        return
-      end
-    end
-
-
-    next_schema_revision = Brazil::SchemaRevision.from_string(next_schema_version)
-    if next_schema_version
-      self.create_schema_version = false
-    else
-      self.create_schema_version = true
-      next_schema_revision = Brazil::SchemaRevision.new(1, 0, 0)
-    end
-
-    updated_schema_revision = Brazil::SchemaRevision.from_string(updated_schema_version)
-    if updated_schema_revision && updated_schema_revision >= next_schema_revision
-      self.schema_version = updated_schema_version
-    else
-      errors.add_to_base("Updated schema version: #{updated_schema_revision}, can not be less than the next schema version: #{next_schema_revision}")
-    end
-  end
-
   def merge_to_dev(update_sql, dev_db_instance_id, dev_schema, db_username, db_password)
     DbInstance.find(dev_db_instance_id).execute_sql(update_sql, db_username, db_password, dev_schema)
   rescue ActiveRecord::RecordNotFound
-    errors.add_to_base("Can not find db instance with id: #{dev_db_instance_id}")
+    errors.add(:base, "Can not find db instance with id: #{dev_db_instance_id}")
   rescue Brazil::DBException => db_exception
-    errors.add_to_base("SQL: #{db_exception}")
+    errors.add(:base, "SQL: #{db_exception}")
   end
 
   def schema_revision
@@ -194,7 +160,7 @@ class Version < ActiveRecord::Base
     #TODO
     match = DbInstanceVersion.find(:first, :joins => [:version, :db_instance], :conditions => ['versions.schema = ? AND db_instances.id = ? AND versions.activity_id = ?', schema, db_instance_test.id, activity.id])
     if match && match.version_id != id
-      errors.add_to_base("Creating a second Version with the same Schema '#{schema}' and Test Database '#{db_instance_test}' is not allowed")
+      errors.add(:base, "Creating a second Version with the same Schema '#{schema}' and Test Database '#{db_instance_test}' is not allowed")
       false
     end
   end
@@ -207,7 +173,7 @@ class Version < ActiveRecord::Base
 
   def check_version_destroy_state
     unless created?
-      errors.add_to_base("You can only delete versions in state '#{Version::STATE_CREATED}', this version is in state '#{state}'.")
+      errors.add(:base, "You can only delete versions in state '#{Version::STATE_CREATED}', this version is in state '#{state}'.")
       false
     end
   end

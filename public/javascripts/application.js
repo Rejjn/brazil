@@ -130,6 +130,29 @@ var brazil = function() {
         }
       },
     },
+    version: {
+      setup_new_version: function(options) {
+        var defaults = { version_types: '', current_version: '.current_version', new_version_major: '#new_version_major', new_version_minor: '#new_version_minor', new_version_patch: '#new_version_patch'};
+        var settings = jQuery.extend(defaults, options);
+        
+        jQuery(settings.version_types).change(function() {
+         var version = jQuery(settings.current_version).html().split('_');
+         var selected_type = jQuery(settings.version_types).val();
+         
+         if (selected_type == 'major') {
+           version[0] = parseInt(version[0])+1; 
+         } else if (selected_type == 'minor') {
+           version[1] = parseInt(version[1])+1;
+         } else if (selected_type == 'patch') {
+           version[2] = parseInt(version[2])+1;
+         }
+         
+         jQuery(settings.new_version_major).val(version[0]);
+         jQuery(settings.new_version_minor).val(version[1]);
+         jQuery(settings.new_version_patch).val(version[2]);
+        });
+      },
+    },
     repo_browser: {
       set_url: function(browser, input_element) {
         //jQuery(browser).load(function(){

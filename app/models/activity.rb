@@ -4,10 +4,10 @@ class Activity < ActiveRecord::Base
   STATE_DEPLOYED = 'deployed'
 
   belongs_to :app
-  has_one :version, :dependent => :destroy
-  has_many :changes, :order => "created_at ASC", :dependent => :destroy
-
   belongs_to :db_instance
+  
+  has_many :versions, :dependent => :destroy
+  has_many :changes, :order => "created_at ASC", :dependent => :destroy
 
   validates_associated :db_instance
   validates_presence_of :name, :schema, :db_type, :dev_schema, :dev_user, :dev_password, :base_version

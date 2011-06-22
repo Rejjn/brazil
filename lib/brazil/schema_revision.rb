@@ -1,6 +1,10 @@
 module Brazil
   class SchemaRevision
     include Comparable
+    
+    TYPE_MAJOR = :major
+    TYPE_MINOR = :minor
+    TYPE_PATCH = :patch
 
     def initialize(major, minor, patch, created = nil, description = nil)
       @major = major.to_i if major
@@ -20,9 +24,18 @@ module Brazil
       end
     end
 
-    def next
+    def next version_type = TYPE_MINOR
       numbers = to_a
-      numbers[-1] += 1
+      
+      case version_type
+        when TYPE_MAJOR
+          numbers[0] += 1
+        when TYPE_MINOR
+          numbers[1] += 1
+        when TYPE_PATCH
+          numbers[2] += 1
+      end
+        
       SchemaRevision.new(numbers[0], numbers[1], numbers[2])
     end
 

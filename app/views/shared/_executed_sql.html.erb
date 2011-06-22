@@ -2,7 +2,7 @@
   <%= javascript_include_tag "syntaxhighlighter/shCore", "syntaxhighlighter/shBrushSql" %>
 <% end %>
 
-<% if deployment_results %>
+<% if defined?(deployment_results) && deployment_results %>
   <div class="span-24 last">
     <% if deployment_results.count > 0%>
       <div class="box" id="executed_sql_box">

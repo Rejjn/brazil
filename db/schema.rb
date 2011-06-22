@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110607133444) do
+ActiveRecord::Schema.define(:version => 20110620142438) do
 
   create_table "activities", :force => true do |t|
     t.string   "name"
@@ -55,11 +55,6 @@ ActiveRecord::Schema.define(:version => 20110607133444) do
     t.boolean  "serenity_db"
     t.datetime "created_at"
     t.datetime "updated_at"
-  end
-
-  create_table "db_instance_versions", :id => false, :force => true do |t|
-    t.integer "db_instance_id"
-    t.integer "version_id"
   end
 
   create_table "db_instances", :force => true do |t|
