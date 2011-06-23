@@ -109,17 +109,17 @@ class VersionsController < ApplicationController
   def test_update
     @activity = Activity.find(params[:activity_id])
     @version = @activity.versions.find(params[:id])
+    
     if (Float(params[:test_db_instance_id]) != nil rescue false)
-      @db_instance = DbInstance.find(params[:test_db_instance_id])
-      @executed_sql = @version.deploy_to_test(create_update_sql(@version), create_rollback_sql(@version), @activity.schema, @db_instance, params[:test_schema], params[:db_username], params[:db_password], params[:vc_username], params[:vc_password])
+      @run_successfull, @executed_sql = @version.test_update(params[:test_db_instance_id], params[:test_schema], params[:db_username], params[:db_password])
     else
       @version.errors.add_to_base("Please select a Test Database!")
     end
 
     respond_to do |format|
-      if @db_instance && @version.errors.empty? && @version.update_attributes(params[:version])
+      if @version.errors.empty? && @run_successfull
         flash[:notice] = "Executed Update SQL"
-        format.html { redirect_to app_activity_version_path(@activity.app, @activity, @version) }
+        format.html { render :action => 'show' }
         format.xml  { head :ok }
         format.json  { head :ok }
       else

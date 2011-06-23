@@ -123,6 +123,8 @@ module Brazil
             raise Brazil::VersionControlException, "no such version control type available"
         end
       end
+      
+      @vc
     end  
   end
 end

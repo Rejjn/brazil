@@ -69,7 +69,7 @@ ActiveRecord::Schema.define(:version => 20110620142438) do
   end
 
   create_table "versions", :force => true do |t|
-    t.string   "state"
+    t.integer  "state"
     t.string   "schema"
     t.string   "schema_version"
     t.string   "preparation"

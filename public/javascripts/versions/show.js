@@ -5,23 +5,19 @@ $(document).ready(function() {
   jQuery.each(jQuery('.attribute_warning'), function(index, value) {
     //brazil.warning.show(jQuery(value))
   });
-
-/*  
-  jQuery.each(jQuery('.sql_tested_oki'), function(index, value) {
-    brazil.element.show({ 
-      link_html: '<a href="#">Show Form</a>', 
-      button_html: '<span style="float: right;"></span>', 
-      to_show: value, 
-      button_container: jQuery(value).parent(), 
-    });
+  
+  brazil.info.setup_toggle({ 
+    container: jQuery('.sql_box').parent(), 
+    affected_element: '.sql_box', 
+    show_caption: 'Show', 
+    hide_caption: 'Hide'
   });
   
-  brazil.element.show({ 
-    link_html: '<a href="#">Show Preparation</a>', 
-    button_html: '<span style="float: right;"></span>', 
-    to_show: jQuery('.preparation'), 
-    button_container: jQuery('.preparation').parent(), 
+  brazil.info.setup_toggle({ 
+    container: jQuery('.preparation').parent(), 
+    affected_element: '.preparation', 
+    show_caption: 'Show', 
+    hide_caption: 'Hide'
   });
-*/
   
 });

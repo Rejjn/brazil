@@ -1,9 +1,13 @@
 <fieldset>
-  <legend>Source repository upload</legend>
-  <div><strong>Deployed</strong> <%= image_tag '/images/cross.png', :class => 'version_test_status' %></div>
+  <legend>Source control repository upload</legend>
+  <div><strong>Uploaded</strong> <%= version_state version.state, :uploaded %></div>
   
   <div>
+      <% if version.state < Version::STATE_ALL_TESTED %>
+        <b>mamam<b/>
+      <% end %>
       <%= render :partial => 'shared/vc_credentials_form' %>
-      <br /><%= submit_tag 'Upload', :class => 'execute_button' %>
+      <br /><%= submit_tag 'Upload', :class => 'execute_button', :disabled => (version.state == Version::STATE_ALL_TESTED ? false : true)%>
+      
   </div>
 </fieldset>

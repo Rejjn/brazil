@@ -1,4 +1,4 @@
-<div class="box version <%=h version.state %>">
+<div class="box version <%=h state_class version.state %>">
   <div class="clearfix">
     <h2>Version</h2>
 
@@ -7,7 +7,7 @@
     </div>
       
     <div class="span-5">
-      <span><strong>State</strong> <%=h version.state %></span>
+      <span><strong>State</strong> <%=h state_text version.state %></span>
       <br>
       <span class="date">Last changed <%=h time_ago_in_words(version.updated_at) %> ago</span>
     </div>
@@ -24,36 +24,36 @@
       <div class="span-10 info last">
         <br><h4>Tested</h4>
         <div class="span-5 info">
-          <span><strong>Update</strong> <%= image_tag '/images/tick.png', :class => 'version_test_status' %></span>
+          <span><strong>Update</strong> <%= version_state version.state, :update %></span>
         </div>
         <div class="span-5 info last">
-          <span><strong>Rollback</strong> <%= image_tag '/images/cross.png', :class => 'version_test_status' %></span>
+          <span><strong>Rollback</strong> <%= version_state version.state, :rollback %></span>
         </div>
       </div>
 
       <div class="span-10 info last">
         <br><h4>Deployed</h4>
         <div class="span-5 last">
-          <span><strong>Source repos:</strong> <%= image_tag '/images/cross.png', :class => 'version_test_status' %></span>
+          <span><strong>Source repos:</strong> <%= version_state version.state, :uploaded %></span>
         </div>
         <div class="span-5 info last">
-          <span><strong>Production env:</strong> <%= image_tag '/images/cross.png', :class => 'version_test_status' %></span> 
+          <span><strong>Production env:</strong> <%= version_state version.state, :deployed %></span> 
         </div>
      </div>        
    </div>
 
     <div class="span-8 last">
       <ul class="actions">
-        <% if version_created(version) %>
+        <% unless version.uploaded? %>
           <li class="destroy nomargin"><%= link_to 'Delete', delete_app_activity_version_path(version.activity.app, version.activity, version) %></li>
           <li><%= link_to 'Edit', edit_app_activity_version_path(version.activity.app, version.activity, version) %></li>
         <% end %>
         <li><%= link_to 'Show', app_activity_version_path(version.activity.app, version.activity, version) %></li>
-          <%# if version_tested(version) %>
+        <% if version.uploaded? %>
           <br class="clear"><br>
           <ul class="actions">
             <li class="attention"><%= link_to 'Mark deployed', edit_app_activity_version_path(version.activity.app, version.activity, version) %></li>
-          <%# end %>
+        <% end %>
       </ul>
     </div>
   </div>

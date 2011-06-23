@@ -1,9 +1,11 @@
 
 class Version < ActiveRecord::Base
-  STATE_CREATED = 'created'
-  STATE_TESTED = 'tested'
-  STATE_DEPLOYED = 'deployed'
-  STATE_MERGED = 'merged'
+  STATE_CREATED = 0
+  STATE_UPDATE_TESTED = 1
+  STATE_ROLLBACK_TESTED = 2
+  STATE_ALL_TESTED = 3
+  STATE_UPLOADED = 4
+  STATE_DEPLOYED = 5
 
   belongs_to :activity
   belongs_to :db_instance
@@ -15,22 +17,26 @@ class Version < ActiveRecord::Base
   before_save :update_activity_state
   before_destroy :check_version_destroy_state
 
-  def deploy_to_test(versioned_update_sql, versioned_rollback_sql, db_schema, test_db_instance, test_db_schema, test_db_username, test_db_password, vc_username, vc_password)
-    db_tools = init_db(test_db_instance.host, test_db_instance.port, test_db_instance.db_type, test_db_schema, test_db_username, test_db_password)
-    db_update_sql = db_tools.prepare_sql(test_db_instance.db_type, versioned_update_sql, test_db_schema, test_db_schema, test_db_schema)
-    db_tools.execute_sql(db_update_sql)
+  def test_update(test_db_instance, test_db_schema, test_db_username, test_db_password)
+    test_db_instance = DbInstance.find(test_db_instance) unless test_db_instance.class == DbInstance 
 
-    add_version_sql_to_version_control(versioned_update_sql, versioned_rollback_sql, db_schema, vc_username, vc_password)
+    sql = ActionView::Base.new(Rails::Configuration.new.view_path).render(:partial => 'update_sql', :locals => {:version => self})
+    results =  test_db_instance.execute_sql(sql, test_db_username, test_db_password, test_db_schema)
     
-    return db_update_sql
+    if results[0]
+      update_attribute(:state, (state >= STATE_ROLLBACK_TESTED ? STATE_ALL_TESTED : STATE_UPDATE_TESTED)) 
+    else 
+      update_attribute(:state, (state >= STATE_ALL_TESTED ? STATE_ROLLBACK_TESTED : STATE_CREATED))
+    end
+    
+    return results
   rescue Brazil::DBException => db_exception
+    update_attribute(:state, (state >= STATE_ALL_TESTED ? STATE_ROLLBACK_TESTED : STATE_CREATED))
     errors.add(:base, "SQL: #{db_exception}")
     return db_exception.data
-  rescue Brazil::VersionControlException => vc_exception
-    errors.add(:base, "Version Control: could not add Version update and rollback SQL (#{vc_exception})")
   end
 
-  def rollback_from_test(versioned_rollback_sql, db_schema, test_db_instance, test_db_schema, test_db_username, test_db_password, vc_username, vc_password)
+  def rollback_test(test_db_instance, test_db_schema, test_db_username, test_db_password)
     db_tools = init_db(test_db_instance.host, test_db_instance.port, test_db_instance.db_type, test_db_schema, test_db_username, test_db_password)
     db_rollback_sql = db_tools.prepare_sql(test_db_instance.db_type, versioned_rollback_sql, test_db_schema, test_db_schema, test_db_schema)
     db_tools.execute_sql(db_rollback_sql)
@@ -83,8 +89,20 @@ class Version < ActiveRecord::Base
     (state == STATE_CREATED)
   end
 
-  def tested?
-    (state == STATE_TESTED)
+  def rollback_tested?
+    (state == STATE_UPDATE_TESTED)
+  end
+
+  def update_tested?
+    (state == STATE_ROLLBACK_TESTED)
+  end
+
+  def all_tested?
+    (state >= STATE_ALL_TESTED)
+  end
+
+  def uploaded?
+    (state >= STATE_UPLOADED)
   end
 
   def deployed?
@@ -125,31 +143,8 @@ class Version < ActiveRecord::Base
       raise Brazil::VersionControlException, "the application must have an Version Control Path set"
     end
     
-    vc_tools = Brazil::VersionControlTools.new
-    vc_tools.configure(Brazil::VersionControlTools::TYPE_SVN, ::AppConfig.vc_uri, activity.app.vc_path, vc_username, vc_password, ::AppConfig.vc_dir)
-    vc_tools.init_vc
-    
-    vc_tools
+    Brazil::AppSchemaVersionControl.new(:vc_type => Brazil::AppSchemaVersionControl::TYPE_SUBVERSION, :vc_path => activity.app.vc_path, :vc_user => vc_username, :vc_password => vc_password, :vc_uri => ::AppConfig.vc_uri, :vc_tmp_dir => ::AppConfig.vc_dir)
   end
-  
-  
-  def init_db(host, port, db_type, db_schema, db_username, db_password)
-    db_tools = Brazil::DatabaseSchema.new
-    db_tools.configure(host, port, db_type, db_schema, db_username, db_password)
-    
-    db_tools
-  end
-
-=begin
-  def init_vc(vc_password, vc_username)
-    version_repos_path = "#{::AppConfig.vc_uri}#{activity.app.vc_path}"
-    vc = Brazil::VersionControl.new(::AppConfig.vc_type, version_repos_path, vc_username, vc_password)
-    unless vc.valid_credentials?
-      raise Brazil::VersionControlException, "version control username or password are not correct"
-    end
-    return vc
-  end
-=end
 
   def version_sql_working_copy_paths(version_working_copy, db_schema)
     version_sql_dir = rio(version_working_copy, activity.schema, activity.db_type.downcase).mkpath

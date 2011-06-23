@@ -2,9 +2,8 @@
   display: none;
 }
 
-#sql_show_controls_div  {
-  float: right;
-  margin-right: 50px;
+div.visibilty_controlls {
+  margin: 5px 15px 0 0;  
 }
 
 input.execute_button {
@@ -24,7 +23,7 @@ input.execute_button {
   color:#FFF;
 }
 
-.box.version.tested h2 {
+.box.version.tested h2, .box.version.uploaded h2 {
   border: 3px solid #AD8C3E;
   background:#FFCE5B;
 }
@@ -45,3 +44,6 @@ textarea.sql {
   height: 20em;
 }
 
+div.sql_box2 {
+  display: none;
+}

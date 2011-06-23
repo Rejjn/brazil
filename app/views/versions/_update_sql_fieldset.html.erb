@@ -1,16 +1,16 @@
 <fieldset>
   <legend>Update SQL</legend>
-  <div><strong>Tested</strong> <%= image_tag '/images/tick.png', :class => 'version_test_status' %></div>
+  <div><strong>Tested</strong> <%= version_state version.state, :update %></div>
   
-  <div class="sql_tested_oki">  
+  <div class="sql_box">  
     <pre class="brush: sql"><%=h create_update_sql(version) %></pre>
   
     <%= form_for(version, :url => test_update_app_activity_version_path(activity.app, activity, version)) do |f| %>
       <%= render :partial => 'shared/form_error', :locals => {:f => f} %>
-      <%= f.hidden_field :state, :value => Version::STATE_TESTED %>
+      <%= f.hidden_field :state, :value => Version::STATE_UPDATE_TESTED %>
       <div class="span-5">
         <%= label_tag :test_db_instance_id, "Test Database" %><br />
-        <%= select_tag :test_db_instance_id, "<option>-- Select --</option>" << options_from_collection_for_select(DbInstance.env_test, :id, :to_s), { :class => 'span-5' } %>
+        <%= select_tag :test_db_instance_id, raw("<option>-- Select --</option>" + options_from_collection_for_select(DbInstance.env_test, :id, :to_s)), { :class => 'span-5' } %>
       </div>
       <div class="span-5">
         <%= label_tag :test_schema, 'Test Database Schema' %><br />

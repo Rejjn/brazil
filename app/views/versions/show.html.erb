@@ -5,9 +5,9 @@
 <%= render :partial => "shared/activity", :locals => {:activity => @activity} %>
 <%= render :partial => 'version', :locals => {:version => @version} %>
 
-<%# if @executed_sql%>
-<%= render :partial => 'shared/executed_sql', :locals => {:sql => @executed_sql} %>
-<%# end %>
+<%= render :partial => 'shared/executed_sql', :locals => {:deployment_results => @executed_sql} %>
+
+<br class="clear"/>
 
 <%= render :partial => 'prepare_box', :locals => {:version => @version, :activity => @activity} %>
 

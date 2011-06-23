@@ -87,10 +87,10 @@ Brazil::Application.routes.draw do
       resources :versions do
         member do
           get :delete
-          post :test_rollback
-          post :test_update
-          post :upload
-          post :deployed
+          put :test_update
+          put :test_rollback
+          put :upload
+          put :deployed
         end
       end
     end

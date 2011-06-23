@@ -55,6 +55,7 @@ class DbInstance < ActiveRecord::Base
   end
 
   def execute_sql(sql, username, password, schema)
+    sql = [{:sql => sql}] if sql.class == String
     db = Brazil::DatabaseSchema.new(host, port, db_type, schema, username, password)
     db.execute_sql_scripts(sql)
   end
