@@ -66,7 +66,7 @@ module Brazil
         sql_results << result
       end
       
-      return !sql_failed, sql_results      
+      return !sql_failed, sql_results   
     end
     
     def execute_sql(sql, db_connection = nil)
@@ -290,7 +290,10 @@ module Brazil
             
             #find all occurrences of user role
             line.gsub!(/(To|From)\s+#{schema_regexp}_role([\n\s,;])/i, "\\1 #{schema_name}_ROLE\\2")
-        end
+            
+            # clean away comments, not allowed on last line by ODBC
+            line.gsub!(/--.*?(\n|$)/, '')
+          end
         when TYPE_MYSQL then
           
           sql.each do |line|

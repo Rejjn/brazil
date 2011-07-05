@@ -1,11 +1,10 @@
 
 class Version < ActiveRecord::Base
-  STATE_CREATED = 0
-  STATE_UPDATE_TESTED = 1
-  STATE_ROLLBACK_TESTED = 2
-  STATE_ALL_TESTED = 3
-  STATE_UPLOADED = 4
-  STATE_DEPLOYED = 5
+  STATE_CREATED = 1
+  STATE_UPDATE_TESTED = 2
+  STATE_ROLLBACK_TESTED = 4
+  STATE_UPLOADED = 8
+  STATE_DEPLOYED = 16
 
   belongs_to :activity
   belongs_to :db_instance
@@ -17,40 +16,48 @@ class Version < ActiveRecord::Base
   before_save :update_activity_state
   before_destroy :check_version_destroy_state
 
+  before_create do 
+    state = STATE_CREATED
+  end
+
   def test_update(test_db_instance, test_db_schema, test_db_username, test_db_password)
     test_db_instance = DbInstance.find(test_db_instance) unless test_db_instance.class == DbInstance 
 
-    sql = ActionView::Base.new(Rails::Configuration.new.view_path).render(:partial => 'update_sql', :locals => {:version => self})
+    sql = SqlController.new.update_sql self
     results =  test_db_instance.execute_sql(sql, test_db_username, test_db_password, test_db_schema)
     
     if results[0]
-      update_attribute(:state, (state >= STATE_ROLLBACK_TESTED ? STATE_ALL_TESTED : STATE_UPDATE_TESTED)) 
+      update_tested! 
     else 
-      update_attribute(:state, (state >= STATE_ALL_TESTED ? STATE_ROLLBACK_TESTED : STATE_CREATED))
+      update_tested! true
     end
     
     return results
   rescue Brazil::DBException => db_exception
-    update_attribute(:state, (state >= STATE_ALL_TESTED ? STATE_ROLLBACK_TESTED : STATE_CREATED))
+    update_tested! true
     errors.add(:base, "SQL: #{db_exception}")
     return db_exception.data
   end
 
-  def rollback_test(test_db_instance, test_db_schema, test_db_username, test_db_password)
-    db_tools = init_db(test_db_instance.host, test_db_instance.port, test_db_instance.db_type, test_db_schema, test_db_username, test_db_password)
-    db_rollback_sql = db_tools.prepare_sql(test_db_instance.db_type, versioned_rollback_sql, test_db_schema, test_db_schema, test_db_schema)
-    db_tools.execute_sql(db_rollback_sql)
+
+  def test_rollback(test_db_instance, test_db_schema, test_db_username, test_db_password)
+    test_db_instance = DbInstance.find(test_db_instance) unless test_db_instance.class == DbInstance 
+
+    sql = SqlController.new.rollback_sql self
+    results =  test_db_instance.execute_sql(sql, test_db_username, test_db_password, test_db_schema)
     
-    delete_version_sql_from_version_control(db_schema, vc_username, vc_password)
-
-    return db_rollback_sql
+    if results[0]
+      rollback_tested! 
+    else 
+      rollback_tested! true
+    end
+    
+    return results
   rescue Brazil::DBException => db_exception
+    rollback_tested! true
     errors.add(:base, "SQL: #{db_exception}")
     return db_exception.data
-  rescue Brazil::VersionControlException => vc_exception
-    errors.add(:base, "Version Control: could not delete Version update and rollback SQL (#{vc_exception})")
   end
-
 
   def set_schema_version major, minor, patch
     begin
@@ -85,28 +92,68 @@ class Version < ActiveRecord::Base
     Brazil::SchemaRevision.from_string(schema_version)
   end
 
-  def created?
-    (state == STATE_CREATED)
+  def created! unset_flag = false
+    unless unset_flag
+      update_attribute(:state, (state | STATE_CREATED))
+    else
+      update_attribute(:state, (state ^ STATE_CREATED))
+    end
   end
 
-  def rollback_tested?
-    (state == STATE_UPDATE_TESTED)
+  def created?
+    (state & STATE_CREATED) != 0
+  end
+
+  def update_tested! unset_flag = false
+    unless unset_flag
+      update_attribute(:state, (state | STATE_UPDATE_TESTED))
+    else 
+      update_attribute(:state, (state ^ STATE_UPDATE_TESTED)) if update_tested?
+    end
   end
 
   def update_tested?
-    (state == STATE_ROLLBACK_TESTED)
+    (state & STATE_UPDATE_TESTED) != 0
   end
 
-  def all_tested?
-    (state >= STATE_ALL_TESTED)
+  def rollback_tested! unset_flag = false
+    unless unset_flag
+      update_attribute(:state, (state | STATE_ROLLBACK_TESTED))
+    else
+      update_attribute(:state, (state ^ STATE_ROLLBACK_TESTED)) if rollback_tested?
+    end
+  end
+
+  def rollback_tested?
+    (state & STATE_ROLLBACK_TESTED) != 0
+  end
+
+  def tested?
+    (state & STATE_ROLLBACK_TESTED) != 0 && (state & STATE_UPDATE_TESTED) != 0 
+  end
+
+  def uploaded! unset_flag = false
+    unless unset_flag
+      update_attribute(:state, (state | STATE_UPLOADED))
+    else
+      update_attribute(:state, (state ^ STATE_UPLOADED)) if uploaded?
+    end
   end
 
   def uploaded?
-    (state >= STATE_UPLOADED)
+    (state & STATE_UPLOADED) != 0
+  end
+
+  def deployed! unset_flag = false
+    unless unset_flag
+      update_attribute(:state, (state | STATE_DEPLOYED))
+    else
+      update_attribute(:state, (state ^ STATE_DEPLOYED)) if deployed?
+    end
   end
 
   def deployed?
-    (state == STATE_DEPLOYED)
+    (state & STATE_DEPLOYED) != 0
   end
 
   def to_s
@@ -114,6 +161,31 @@ class Version < ActiveRecord::Base
   end
 
   private
+  
+  # test = :update or :rollback
+  def update_test_state(test, success = true)
+    if created?
+      if success
+        return {:update => STATE_UPDATE_TESTED, :rollback => STATE_ROLLBACK_TESTED}.fetch(test)
+      else
+        return STATE_CREATED
+      end
+    elsif update_tested?
+      if success
+        return ""
+      else
+        return ""
+      end
+    elsif rollback_tested?
+      if success
+        return ""
+      else
+        return ""
+      end      
+    end
+    
+    return STATE_CREATED
+  end
 
   def add_version_sql_to_version_control(update_sql, rollback_sql, db_schema, vc_username, vc_password)
     vc_tools = init_vc(vc_password, vc_username)

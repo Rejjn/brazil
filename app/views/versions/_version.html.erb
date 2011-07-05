@@ -1,4 +1,4 @@
-<div class="box version <%=h state_class version.state %>">
+<div class="box version <%=h state_class version %>">
   <div class="clearfix">
     <h2>Version</h2>
 
@@ -7,7 +7,7 @@
     </div>
       
     <div class="span-5">
-      <span><strong>State</strong> <%=h state_text version.state %></span>
+      <span><strong>State</strong> <%=h state_text version %></span>
       <br>
       <span class="date">Last changed <%=h time_ago_in_words(version.updated_at) %> ago</span>
     </div>
@@ -24,20 +24,20 @@
       <div class="span-10 info last">
         <br><h4>Tested</h4>
         <div class="span-5 info">
-          <span><strong>Update</strong> <%= version_state version.state, :update %></span>
+          <span><strong>Update</strong> <%= version_state_img version, :update %></span>
         </div>
         <div class="span-5 info last">
-          <span><strong>Rollback</strong> <%= version_state version.state, :rollback %></span>
+          <span><strong>Rollback</strong> <%= version_state_img version, :rollback %></span>
         </div>
       </div>
 
       <div class="span-10 info last">
         <br><h4>Deployed</h4>
         <div class="span-5 last">
-          <span><strong>Source repos:</strong> <%= version_state version.state, :uploaded %></span>
+          <span><strong>Source repos:</strong> <%= version_state_img version, :uploaded %></span>
         </div>
         <div class="span-5 info last">
-          <span><strong>Production env:</strong> <%= version_state version.state, :deployed %></span> 
+          <span><strong>Production env:</strong> <%= version_state_img version, :deployed %></span> 
         </div>
      </div>        
    </div>

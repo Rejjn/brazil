@@ -88,7 +88,7 @@ class VersionsController < ApplicationController
     @activity = Activity.find(params[:activity_id])
     @version = @activity.versions.find(params[:id])
     @version.attributes = params[:version]
-
+    @version.state = Version::STATE_CREATED
     @version.set_schema_version params[:new_version]['major'], params[:new_version]['minor'], params[:new_version]['patch']
 
     respond_to do |format|
@@ -137,16 +137,16 @@ class VersionsController < ApplicationController
     @version = @activity.versions.find(params[:id])
 
     if (Float(params[:test_db_instance_id]) != nil rescue false)    
-      @db_instance = DbInstance.find(params[:test_db_instance_id])
-      @executed_sql = @version.rollback_from_test(create_rollback_sql(@version), @activity.schema, @db_instance, params[:test_schema], params[:db_username], params[:db_password], params[:vc_username], params[:vc_password])
+      @run_successfull, @executed_sql = @version.test_rollback(params[:test_db_instance_id], params[:test_schema], params[:db_username], params[:db_password])
     else
       @version.errors.add_to_base("Please select a Test Database!")
     end
 
     respond_to do |format|
-      if @db_instance && @version.errors.empty? && @version.update_attributes(params[:version])
-        flash[:notice] = "Executed Rollback SQL on #{@version.db_instance_test}"
-        format.html { redirect_to app_activity_version_path(@activity.app, @activity, @version) }
+      if @version.errors.empty? && @run_successfull
+        flash[:notice] = "Executed Rollback SQL"
+        #format.html { redirect_to app_activity_version_path(@activity.app, @activity, @version) }
+        format.html { render :action => 'show' }
         format.xml  { head :ok }
         format.json  { head :ok }
       else
@@ -235,11 +235,11 @@ class VersionsController < ApplicationController
   private
 
   def create_update_sql(version)
-    render_to_string :partial => 'update_sql', :locals => {:version => version}
+    SqlController.new.update_sql version
   end
 
   def create_rollback_sql(version)
-    render_to_string :partial => 'rollback_sql', :locals => {:version => version}
+    SqlController.new.rollback_sql version
   end
 
   def add_controller_crumbs

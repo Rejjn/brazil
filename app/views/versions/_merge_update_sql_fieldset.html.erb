@@ -4,7 +4,6 @@
 
   <%= form_for(version, :url => merge_app_activity_version_path(version.activity.app, version.activity, version)) do |f| %>
     <%= render :partial => 'shared/form_error', :locals => {:f => f} %>
-    <%= f.hidden_field :state, :value => Version::STATE_MERGED %>
     <div>
       <div class="span-4">
         <%= label_tag 'dev_db_instance_id', 'Dev Database' %><br />

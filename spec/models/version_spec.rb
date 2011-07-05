@@ -1,6 +1,9 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe Version do 
+  
+  fixtures :activities
+  
   before(:each) do
     @valid_attributes = {
         :id => 1,
@@ -25,25 +28,12 @@ describe Version do
 
     DbInstance.stub!(:find_all_by_id).and_return(mock_db_instances)
 
-    DbInstanceVersion.stub!(:find).and_return(nil)
-
     @version = Version.new(@valid_attributes)
   end
 
-  describe "when saving an version" do
+  describe "when saving" do
     it "should be a valid version instance given valid attributes" do
       @version.should be_valid
-    end
-
-    it "should be a duplicate of an existing version" do
-      db_instance_version = mock_model(DbInstanceVersion)
-      db_instance_version.stub!(:version_id).and_return(-1)
-
-      DbInstanceVersion.stub!(:find).and_return(db_instance_version)
-
-      errors = mock(ActiveRecord::Errors, :null_object => true)
-      errors.should_receive(:add_to_base)
-      @version.stub!(:errors).and_return(errors)
     end
 
     describe "and updates activity state" do
@@ -61,20 +51,6 @@ describe Version do
     end
   end
 
-  describe "when calling db_instance_test" do
-    it "should return a test db_instance belonging to the version" do
-      db_instance_test = mock_model(DbInstance)
-      DbInstance.stub!(:find_all_by_id).and_return([db_instance_test])
-
-      @version.db_instance_test.should eql(db_instance_test)
-    end
-
-    it "should find no test db_instance for the version" do
-      DbInstance.stub!(:find_all_by_id).and_return([])
-      lambda { @version.db_instance_test.should eql(db_instance_test) }.should raise_error(Brazil::NoDBInstanceException)
-    end
-  end
-
   describe "when calling schema_revision" do
     it "should return a Brazil::SchemaRevision if there is a schema_version" do
       @version.schema_revision.should == Brazil::SchemaRevision.from_string(@version.schema_version)
@@ -89,46 +65,85 @@ describe Version do
 
   describe "when calling created?" do
     it "should be true" do
-      @version.stub!(:state).and_return(Version::STATE_CREATED)
+      @version.created!
       @version.created?.should be_true
     end
 
     it "should be false" do
-      @version.stub!(:state).and_return(Version::STATE_TESTED)
+      @version.created! true
+      @version.created?.should be_false
+      
+      @version.created!
+      @version.created! true
       @version.created?.should be_false
     end
   end
 
-  describe "when calling tested?" do
+  describe "when calling update_tested?" do
     it "should be true" do
-      @version.stub!(:state).and_return(Version::STATE_TESTED)
-      @version.tested?.should be_true
+      @version.update_tested!
+      @version.update_tested?.should be_true
     end
 
     it "should be false" do
-      @version.stub!(:state).and_return(Version::STATE_CREATED)
-      @version.tested?.should be_false
+      @version.update_tested! true
+      @version.update_tested?.should be_false
+
+      @version.update_tested!
+      @version.update_tested! true
+      @version.update_tested?.should be_false
+    end
+  end
+  
+  describe "when calling rollback_tested?" do
+    it "should be true" do
+      @version.rollback_tested!
+      @version.rollback_tested?.should be_true
+    end
+
+    it "should be false" do
+      @version.rollback_tested! true
+      @version.rollback_tested?.should be_false
+    
+      @version.rollback_tested!
+      @version.rollback_tested! true
+      @version.rollback_tested?.should be_false
     end
   end
 
   describe "when calling deployed?" do
     it "should be true" do
-      @version.stub!(:state).and_return(Version::STATE_DEPLOYED)
+      @version.deployed!
       @version.deployed?.should be_true
     end
 
     it "should be false" do
-      @version.stub!(:state).and_return(Version::STATE_TESTED)
+      @version.deployed! true 
+      @version.deployed?.should be_false
+    
+      @version.deployed!
+      @version.deployed! true
       @version.deployed?.should be_false
     end
   end 
+  
+  describe "when calling uploaded?" do
+    it "should be true" do
+      @version.uploaded!
+      @version.uploaded?.should be_true
+    end
 
-  it "should return a string with schema and test db_instance when calling to_s" do
-    db_instance_test_to_s = 'brazil foo'
-    db_instance_test = mock_model(DbInstance)
-    db_instance_test.should_receive(:to_s).and_return(db_instance_test_to_s)
-    @version.stub!(:db_instance_test).and_return(db_instance_test)
+    it "should be false" do
+      @version.uploaded! true
+      @version.uploaded?.should be_false
+    
+      @version.uploaded!
+      @version.uploaded! true
+      @version.uploaded?.should be_false
+    end
+  end 
 
-    @version.to_s == "#{@version.schema}@#{db_instance_test_to_s}"
+  it "should return a string with schema and revision when calling to_s" do
+    @version.to_s == "#{@version.schema} - #{@version.schema_revision}"
   end
 end

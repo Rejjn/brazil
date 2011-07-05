@@ -2,45 +2,57 @@ require 'dbi'
 
 module VersionsHelper
   
-  def state_text state
-    ['Created', 'Update tested', 'Rollback tested', 'Tested Oki', 'Uploaded', 'Deployed'].at state    
+  def state_text version
+    if version.deployed?
+      'Deployed'    
+    elsif version.uploaded?
+      'Uploaded'
+    elsif version.tested?
+      'Tested Oki'
+    elsif version.update_tested?
+      'Rollback tested'
+    elsif version.rollback_tested?
+      'Update tested'
+    else
+     'Created' 
+    end
   end
   
-  def state_class state
-    case state
-      when Version::STATE_CREATED, Version::STATE_UPDATE_TESTED, Version::STATE_ROLLBACK_TESTED
-        'created'
-      when  Version::STATE_ALL_TESTED
-        'tested'
-      when Version::STATE_UPLOADED
-        'uploaded'
-      when Version::STATE_DEPLOYED
-        'deployed'
-    end          
+  def state_class version
+      
+    if version.deployed?
+      'deployed'
+    elsif version.uploaded?
+      'uploaded'
+    elsif version.tested?
+      'tested'
+    else
+      'created'
+    end
   end
   
-  def version_state state, type
+  def version_state_img version, type
     case type
       when :update
-        if state == Version::STATE_ALL_TESTED || state == Version::STATE_UPDATE_TESTED
+        if version.update_tested?
           image_tag '/images/tick.png', :class => 'version_test_status'
         else
           image_tag '/images/cross.png', :class => 'version_test_status'
         end
       when :rollback
-        if state == Version::STATE_ALL_TESTED || state == Version::STATE_ROLLBACK_TESTED
+        if version.rollback_tested?
           image_tag '/images/tick.png', :class => 'version_test_status'
         else
           image_tag '/images/cross.png', :class => 'version_test_status'
         end
       when :uploaded
-        if state == Version::STATE_UPLOADED
+        if version.uploaded?
           image_tag '/images/tick.png', :class => 'version_test_status'
         else
           image_tag '/images/cross.png', :class => 'version_test_status'
         end
       when :deployed
-        if state == Version::STATE_DEPLOYED
+        if version.deployed?
           image_tag '/images/tick.png', :class => 'version_test_status'
         else
           image_tag '/images/cross.png', :class => 'version_test_status'
@@ -48,12 +60,5 @@ module VersionsHelper
     end  
   end
 
-  def sql_escape(object)
-    escaped_object = DBI::TypeUtil.convert(nil, object)
-    if escaped_object
-      escaped_object
-    else
-      "NULL"
-    end
-  end
+
 end
