@@ -74,16 +74,10 @@ a:hover {
   float:right;
 }
 
-.actions li a.loading, .actions li input.loading {
+.actions li a.loading, .actions li input.loading, input.loading {
   color: #333 !important;
   border-color: #999 !important;
   background: #ddd url('/images/ajax-loader-buttons.gif') no-repeat center right !important;
-}
-
-.actions li a.loading img {
-  position: relative;
-  top: 2px;
-  height: 1em;
 }
 
 .actions li.destroy {
@@ -95,19 +89,19 @@ a:hover {
   margin-right: 0px;
 }
 
-.actions li.destroy a, .actions li.destroy input {
+.actions li.destroy a, .actions li.destroy input, input.destroy {
   background:#FBE3E4;
   color:#8a1f11;
   border-color:#FBC2C4;
 }
 
-.actions li.attention a, .actions li.attention input {
+.actions li.attention a, .actions li.attention input, input.attention {
   background:#f5ef96;
   border-color:#d5cb33;
   color:#585415;
 }
 
-.actions li a, .actions li input {
+.actions li a, .actions li input, input.button {
   display:block;
   padding:2px 18px;
   border:1px solid #C6D880;
@@ -119,6 +113,10 @@ a:hover {
   text-decoration:none;
   font-size: 100%;
   cursor: pointer;
+}
+
+.actions li input, input.button_normal {
+  font-size: 95%;
 }
 
 textarea {

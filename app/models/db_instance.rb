@@ -31,6 +31,10 @@ class DbInstance < ActiveRecord::Base
     (db_env == DbInstance::ENV_TEST)
   end
 
+  def wipeable_schemas?
+    wipeable_schemas
+  end
+
   def to_s
     db_alias
   end
@@ -66,8 +70,10 @@ class DbInstance < ActiveRecord::Base
   end
 
   def wipe_schema(username, password, schema) 
-    serenity_api = Brazil::SerenityIntegration.new
-    serenity_api.wipe_schema(db_type, :schema => schema, :port => port)   
+    if wipeable_schemas?
+      serenity_api = Brazil::SerenityIntegration.new
+      serenity_api.wipe_schema(db_type, :schema => schema, :port => port)
+    end
   end
 
   def check_db_credentials(username, password, schema)

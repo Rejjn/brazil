@@ -63,6 +63,7 @@ class VersionsController < ApplicationController
     @activity = Activity.find(params[:activity_id])
     @version = @activity.versions.build(params[:version])
     @version.set_schema_version params[:new_version]['major'], params[:new_version]['minor'], params[:new_version]['patch']
+    @version.state = Version::STATE_CREATED
 
     respond_to do |format|
       if @version.errors.empty? && @version.save
@@ -119,7 +120,7 @@ class VersionsController < ApplicationController
     respond_to do |format|
       if @version.errors.empty? && @run_successfull
         flash[:notice] = "Executed Update SQL"
-        format.html { redirect_to app_activity_version_path(@activity.app, @activity, @version) }
+        format.html { render :action => 'show' }
         format.xml  { head :ok }
         format.json  { head :ok }
       else
@@ -145,7 +146,7 @@ class VersionsController < ApplicationController
     respond_to do |format|
       if @version.errors.empty? && @run_successfull
         flash[:notice] = "Executed Rollback SQL"
-        format.html { redirect_to app_activity_version_path(@activity.app, @activity, @version) }
+        format.html { render :action => 'show' }
         format.xml  { head :ok }
         format.json  { head :ok }
       else
@@ -167,7 +168,7 @@ class VersionsController < ApplicationController
         @version.add_to_version_control(params[:vc_username], params[:vc_password])
         
         flash[:notice] = "Successfully uploaded version '#{@version}' to the source version control repos"
-        format.html { redirect_to app_activity_version_path(@activity.app, @activity, @version) }
+        format.html { render :action => 'show' }
         format.xml  { head :ok }
         format.json  { head :ok }
       rescue => e

@@ -165,8 +165,8 @@ class Version < ActiveRecord::Base
       asvc = init_asvc(vc_password, vc_username)
       
       version_update_sql, version_rollback_sql, version_preparation_txt = version_sql_working_copy_paths(asvc.vc_working_copy, schema)
-      version_update_sql.print!(update_sql)
-      version_rollback_sql.print!(rollback_sql)
+      version_update_sql.print!(SqlController.new.update_sql(self))
+      version_rollback_sql.print!(SqlController.new.rollback_sql(self))
       files_to_add = [version_update_sql.path, version_rollback_sql.path]
 
       unless preparation.empty?

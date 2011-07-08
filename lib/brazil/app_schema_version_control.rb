@@ -27,15 +27,19 @@ module Brazil
     def find_schemas
       case @vc_type
         when TYPE_SUBVERSION then
-          clnt = HTTPClient.new
-          vc_schema_html = clnt.get_content("#{@vc_uri}#{@vc_path}")
-         
-          schemas = []
-          vc_schema_html.scan(/>([\w\d_-]+)\/<\/a><\/li>/) do |schema|
-            schemas << schema[0]
+          begin 
+            clnt = HTTPClient.new
+            vc_schema_html = clnt.get_content("#{@vc_uri}#{@vc_path}")
+           
+            schemas = []
+            vc_schema_html.scan(/>([\w\d_-]+)\/<\/a><\/li>/) do |schema|
+              schemas << schema[0]
+            end
+        
+            return schemas.sort!
+          rescue HTTPClient::BadResponseError => e
+            raise VersionControlException, "Failed when requesting SVN url, possibly the URL doesn't exist anymore (#{e})"
           end
-      
-          return schemas.sort!
         else
           raise AppSchemaVersionControlException, "no such version control type available"
       end

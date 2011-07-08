@@ -10,16 +10,16 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110620142438) do
+ActiveRecord::Schema.define(:version => 20110708140716) do
 
   create_table "activities", :force => true do |t|
     t.string   "name"
     t.string   "description"
     t.string   "schema"
     t.string   "state"
-    t.integer  "app_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "app_id"
     t.string   "db_type"
     t.string   "dev_schema"
     t.string   "dev_user"
@@ -37,47 +37,34 @@ ActiveRecord::Schema.define(:version => 20110620142438) do
 
   create_table "changes", :force => true do |t|
     t.string   "developer"
-    t.string   "state"
     t.integer  "activity_id"
     t.text     "sql"
     t.datetime "created_at"
     t.datetime "updated_at"
-  end
-
-  create_table "db_deploys", :force => true do |t|
-    t.integer  "db_instance_id"
-    t.string   "db_schema"
-    t.string   "db_user"
-    t.string   "db_password"
-    t.string   "src_type"
-    t.string   "src_path"
-    t.string   "current_version"
-    t.boolean  "serenity_db"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.string   "state"
   end
 
   create_table "db_instances", :force => true do |t|
-    t.string   "db_alias"
     t.string   "host"
     t.integer  "port"
     t.string   "db_env"
-    t.string   "db_type"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "db_alias"
+    t.string   "db_type"
     t.boolean  "wipeable_schemas"
   end
 
   create_table "versions", :force => true do |t|
-    t.integer  "state"
     t.string   "schema"
-    t.string   "schema_version"
-    t.string   "preparation"
+    t.integer  "state"
     t.integer  "activity_id"
-    t.text     "update_sql"
-    t.text     "rollback_sql"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.text     "update_sql"
+    t.text     "rollback_sql"
+    t.text     "preparation"
+    t.string   "schema_version"
     t.boolean  "create_schema_version"
   end
 

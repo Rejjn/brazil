@@ -5,7 +5,7 @@ class DeployController < ApplicationController
   # GET /deploy
   # GET /deploy.xml
   def index
-    @apps = App.all
+    @apps = App.all(:order => 'name ASC')
 
     respond_with
   end
@@ -15,7 +15,7 @@ class DeployController < ApplicationController
   def show_app
     respond_to do |format|
       begin
-        @apps = App.all
+        @apps = App.all(:order => 'name ASC')
         @app = App.find(params[:app])
         
         set_app_schema_vc
@@ -25,7 +25,7 @@ class DeployController < ApplicationController
         format.xml
       rescue => exception
         compile_grouped_dbi_list
-        flash[:error] = "#{exception} (#{exception.class})"
+        flash[:error] = "Error while getting database schemas #{exception} (#{exception.class})"
         format.html { render :action => "index" }
         format.xml  { render :status => :unprocessable_entity }
       end
@@ -35,7 +35,7 @@ class DeployController < ApplicationController
   def show_schema
     respond_to do |format|
       begin
-        @apps = App.all
+        @apps = App.all(:order => 'name ASC')
         @app = App.find(params[:app])
         
         set_app_schema_vc
@@ -48,7 +48,7 @@ class DeployController < ApplicationController
         format.xml
       rescue => exception
         compile_grouped_dbi_list
-        flash[:error] = "#{exception} (#{exception.class})"
+        flash[:error] = "Error while getting database instances! #{exception} (#{exception.class})"
         format.html { render :action => "show_app", :status => :unprocessable_entity }
         format.xml  { render :status => :unprocessable_entity }
       end
@@ -58,7 +58,7 @@ class DeployController < ApplicationController
   def show_instance
     respond_to do |format|
       begin
-        @apps = App.all
+        @apps = App.all(:order => 'name ASC')
         @app = App.find(params[:app])
         
         set_app_schema_vc
@@ -225,15 +225,19 @@ class DeployController < ApplicationController
   end
 
   def find_schemas
-    @schemas = []
-    @vc_schemas = []
-    
-    @vc_schemas = @vscm.find_schemas
-    @brazil_schemas = []
-    @app.activities.each do |activity|
-      @brazil_schemas << activity.schema
+    begin
+      @schemas = []
+      @vc_schemas = []
+      
+      @vc_schemas = @vscm.find_schemas
+      @brazil_schemas = []
+      @app.activities.each do |activity|
+        @brazil_schemas << activity.schema
+      end
+      @schemas = (@vc_schemas + @brazil_schemas).uniq.sort
+    #rescue => e
+    #  raise RuntimeError, "mamma"      
     end
-    @schemas = (@vc_schemas + @brazil_schemas).uniq.sort
   end      
 
   def find_selected_schema schema
@@ -244,7 +248,7 @@ class DeployController < ApplicationController
       type = @vscm.find_schema_type schema
     else
       source = 'brazil'
-      activity = @app.activities.where(:schema => schema).limit(1)
+      activity = @app.activities.where(:schema => schema).limit(1).first
       type = activity.db_type 
     end
       
@@ -257,7 +261,7 @@ class DeployController < ApplicationController
   
   def set_credentials
     if params[:db_username] && params[:db_password]
-        session[:db_credentials] = {:db_username => params[:db_username], :db_password => params[:db_password], :target_schema => params[:target_schema]}
+        session[:db_credentials] = {:db_username => params[:db_username].dup, :db_password => params[:db_password].dup, :target_schema => params[:target_schema].dup}
     end
   end
 

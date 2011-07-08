@@ -10,6 +10,7 @@ var deploy_forms = function(){
     },
     done: function(){
       brazil.manipulate.syntax_highlight();
+      brazil.info.setup_close('#executed_sql_box');
       deploy_forms();
     },
   });
@@ -31,6 +32,7 @@ var deploy_forms = function(){
     },
     done: function(){
       brazil.manipulate.syntax_highlight();
+      brazil.info.setup_close('#executed_sql_box');
       deploy_forms();
     },
   });
@@ -53,6 +55,7 @@ var deploy_forms = function(){
     },
     done: function(){
       brazil.manipulate.syntax_highlight();
+      brazil.info.setup_close('#executed_sql_box');
       deploy_forms();
     },
   });
@@ -63,7 +66,6 @@ var deploy_forms = function(){
     show_caption: 'Show Versions', 
     hide_caption: 'Hide Versions'
   });  
-  
   
 }
 

@@ -10,7 +10,7 @@
 <% if @deployment_results %>
   <div class="span-24 last">
     <% if @deployment_results.count > 0%>
-      <div class="box">
+      <div class="box" id="executed_sql_box">
         <h3>SQL deployment results</h3>
         <br>
         <% @deployment_results.each do |sql_result| %>
@@ -86,7 +86,9 @@
     
       <div class="span-11 last">
         <%= render :partial => 'rollback_fieldset', :locals => {:rollback_versions => @rollback_versions } %>
-        <%= render :partial => 'wipe_fieldset' %>
+        <% if @db_instance.wipeable_schemas? %>
+          <%= render :partial => 'wipe_fieldset' %>
+          <% end %>
       </div>
   </fieldset>
 <div>

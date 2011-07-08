@@ -270,12 +270,13 @@ var brazil = function() {
         var defaults = { button: '', method: '', response_container: '', success: function(){}, error: function(){}, done: function(){} };
         var settings = jQuery.extend(defaults, options);
 
-        jQuery(settings.button).live('click', function(event) {
+        jQuery(settings.button).click(function(event) {
           event.preventDefault();
           button = jQuery(this);
           
           var form = jQuery(this).attr('form');
           button.addClass('loading');
+          button.attr('disabled', 'disabled');
           
           jQuery.ajax({
             url: form.action,
@@ -285,11 +286,13 @@ var brazil = function() {
               settings.success();
               settings.done();
               button.removeClass('loading');
+              button.removeAttr('disabled');
             },
             error: function(XMLHttpRequest, textStatus, errorThrown) {
               settings.error();
               settings.done();
               button.removeClass('loading');
+              button.removeAttr('disabled');
             },
           });
         });
@@ -395,6 +398,7 @@ var brazil = function() {
         jQuery(settings.form_container).find('form').ajaxForm({
           beforeSubmit: function(formData, jqForm, options) {
             jQuery('input[type="submit"]', jqForm).attr('disabled', 'disabled');
+            jQuery('input[type="submit"]', jqForm).addClass('loading');
           },
           success: function(responseText, statusText) {
             jQuery(settings.response_container).hide();
@@ -405,12 +409,16 @@ var brazil = function() {
             jQuery(settings.form_container).find('#form_error').hide();
             jQuery(settings.form_container).find('.fieldWithErrors').removeClass('fieldWithErrors');
             jQuery(settings.form_container).find('input[type="submit"]').removeAttr('disabled');
+            jQuery(settings.form_container).find('input[type="submit"]').removeClass('loading');
 
             jQuery(settings.response_container).show();
             settings.done();
           },
           error: function(XMLHttpRequest, textStatus, errorThrown) {
             jQuery(settings.form_container).replaceWith(XMLHttpRequest.responseText);
+
+            //jQuery(settings.form_container).find('input[type="submit"]').removeAttr('disabled');
+            //jQuery('input[type="submit"]', jqForm).removeClass('loading');
 
             settings.error();
 

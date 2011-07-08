@@ -10,6 +10,9 @@ module Brazil
     SVN_BIN = ::AppConfig.svn_bin
 
     def initialize(repository_uri, username, password)
+      
+      puts "init svn cli: #{[repository_uri, username, password].inspect}"
+      
       @repository_uri = repository_uri
       @username = username
       @password = password
@@ -21,7 +24,7 @@ module Brazil
         pid, stdin, stdout, stderr = Open4.popen4("#{svn_bin} checkout #{repos_path} #{rev_opts} #{checkout_path}")
         ignored, status = Process::waitpid2 pid
         
-        raise Brazil::Error, "Failed checkout #{repos_path}@#{vc_revision} to #{checkout_path}, #{stderr.gets}" if status.exitstatus != 0  
+        raise Brazil::Error, "Failed checkout #{repos_path}@#{vc_revision} to #{checkout_path}, #{stderr.read}" if status.exitstatus != 0  
       rescue Brazil::Error => cli_exception
         raise Brazil::VersionControlException, "Could not checkout repository: #{@repository_uri} to path: #{checkout_path} (#{cli_exception})", caller
       end
@@ -46,8 +49,8 @@ module Brazil
         
         #raise Brazil::Error, "Failed update working copy #{working_copy_path}, #{stderr.gets}" if wait_thr.value.exitstatus != 0
             
-        if stdout.gets =~ /^Skipped/         
-          raise Brazil::Error, "Skipped #{working_copy_path}, most likely not a working copy, #{stdout.gets}"
+        if stdout.read =~ /^Skipped/         
+          raise Brazil::Error, "Skipped #{working_copy_path}, most likely not a working copy, #{stdout.read}"
         end
       rescue Brazil::Error => cli_exception
         raise Brazil::VersionControlException, "Could not update working copy path: #{working_copy_path} (#{cli_exception})", caller
@@ -82,9 +85,7 @@ module Brazil
         pid, stdin, stdout, stderr = Open4.popen4("#{svn_bin} add #{working_copy_paths.join(' ')}")
         ignored, status = Process::waitpid2 pid
         
-        puts "add: #{stdout.gets}"
-        
-        raise Brazil::Error, "Failed to add #{working_copy_paths.join(',')} to working copy, #{stderr.gets}" if status.exitstatus != 0
+        raise Brazil::Error, "Failed to add #{working_copy_paths.join(',')} to working copy, #{stderr.read}" if status.exitstatus != 0
       rescue Brazil::Error => svn_exception
         raise Brazil::VersionControlException, "Could not add to working copy (#{svn_exception})", caller
       end
@@ -98,7 +99,7 @@ module Brazil
         pid, stdin, stdout, stderr = Open4.popen4("#{svn_bin} del #{working_copy_paths.join(' ')}")
         ignored, status = Process::waitpid2 pid
 
-        raise Brazil::Error, "Failed to delete #{working_copy_paths.join(',')} from working copy, #{stderr.gets}" if status.exitstatus != 0
+        raise Brazil::Error, "Failed to delete #{working_copy_paths.join(',')} from working copy, #{stderr.read}" if status.exitstatus != 0
       rescue Brazil::Error => svn_exception
         raise Brazil::VersionControlException, "Could not delete from working copy (#{svn_exception})", caller
       end
@@ -112,9 +113,7 @@ module Brazil
         pid, stdin, stdout, stderr = Open4.popen4("#{svn_bin} commit -m '#{commit_message}' #{working_copy_paths.join(' ')}")
         ignored, status = Process::waitpid2 pid
         
-        puts "commit: #{stdout.gets}"
-        
-        raise Brazil::Error, "Failed to commit #{working_copy_paths.join(',')} to working copy, #{stderr.gets}" if status.exitstatus != 0
+        raise Brazil::Error, "Failed to commit #{working_copy_paths.join(',')} to working copy, #{stderr.read}" if status.exitstatus != 0
       rescue Brazil::Error => svn_exception
         raise Brazil::VersionControlException, "Could not commit to working copy (#{svn_exception})", caller
       end
