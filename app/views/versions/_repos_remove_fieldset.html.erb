@@ -1,0 +1,12 @@
+<fieldset>
+  <legend>Source control repository rollback</legend>
+
+  <div>
+    <%= form_for(version, :url => remove_app_activity_version_path(activity.app, activity, version)) do |f| %>
+      <%= render :partial => 'shared/form_error', :locals => {:f => f} %>
+
+      <%= render :partial => 'shared/vc_credentials_form' %>
+      <br /><%= submit_tag 'Remove', :class => 'execute_button', :disabled => version.deployed?%>
+    <% end %>      
+  </div>
+</fieldset>

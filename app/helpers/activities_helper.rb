@@ -9,14 +9,14 @@ module ActivitiesHelper
   
   def activity_actionable_count(activity, format = :html)
     counts = Array.new
-    case activity.state
+#    case activity.state
       #when Activity::STATE_DEVELOPMENT
       #   counts << ['Suggested', activity.changes.count(:all, :conditions => {:state => [Change::STATE_SUGGESTED]})]
-      when Activity::STATE_DEPLOYED
-        counts = activity.versions.count(:state, :group => 'state', :conditions => {:state => [Version::STATE_CREATED, Version::STATE_TESTED]}).collect do |count|
-          [count.first.capitalize, count.last]
-        end        
-    end
+#      when Activity::STATE_DEPLOYED
+#        counts = activity.versions.count(:state, :group => 'state', :conditions => {:state => [Version::STATE_CREATED, Version::STATE_TESTED]}).collect do |count|
+#          [count.first.capitalize, count.last]
+#        end        
+#    end
     
     output = String.new
     counts.each do |count|

@@ -49,10 +49,10 @@
           <li><%= link_to 'Edit', edit_app_activity_version_path(version.activity.app, version.activity, version) %></li>
         <% end %>
         <li><%= link_to 'Show', app_activity_version_path(version.activity.app, version.activity, version) %></li>
-        <% if version.uploaded? %>
+        <% if version.uploaded? && !version.deployed? %>
           <br class="clear"><br>
           <ul class="actions">
-            <li class="attention"><%= link_to 'Mark deployed', edit_app_activity_version_path(version.activity.app, version.activity, version) %></li>
+            <li class="attention"><%= button_to 'Mark deployed', deployed_app_activity_version_path(version.activity.app, version.activity, version) , :method => :put %></li>
         <% end %>
       </ul>
     </div>

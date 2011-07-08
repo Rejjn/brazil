@@ -160,57 +160,53 @@ class Version < ActiveRecord::Base
     "#{schema} - #{schema_revision}"
   end
 
-  private
+  def add_to_version_control(vc_username, vc_password)
+    begin 
+      asvc = init_asvc(vc_password, vc_username)
+      
+      version_update_sql, version_rollback_sql, version_preparation_txt = version_sql_working_copy_paths(asvc.vc_working_copy, schema)
+      version_update_sql.print!(update_sql)
+      version_rollback_sql.print!(rollback_sql)
+      files_to_add = [version_update_sql.path, version_rollback_sql.path]
+
+      unless preparation.empty?
+        version_preparation_txt.print!(preparation) 
+        files_to_add << version_preparation_txt.path
+      end
   
-  # test = :update or :rollback
-  def update_test_state(test, success = true)
-    if created?
-      if success
-        return {:update => STATE_UPDATE_TESTED, :rollback => STATE_ROLLBACK_TESTED}.fetch(test)
-      else
-        return STATE_CREATED
-      end
-    elsif update_tested?
-      if success
-        return ""
-      else
-        return ""
-      end
-    elsif rollback_tested?
-      if success
-        return ""
-      else
-        return ""
-      end      
+      logger.info "WC PATH :" << asvc.vc_working_copy.path
+      
+      asvc.vc.add(files_to_add)
+      asvc.vc.commit(asvc.vc_working_copy.path, "TOOL Add version #{schema_version} SQL for #{activity.app.name} schema #{schema}")
+      
+      uploaded!
+    rescue
+      uploaded! true
+      raise
     end
+  end
+
+  def delete_from_version_control(vc_username, vc_password)
     
-    return STATE_CREATED
+    begin 
+      asvc = init_asvc(vc_password, vc_username)
+  
+      version_update_sql, version_rollback_sql, version_preparation_txt = version_sql_working_copy_paths(asvc.vc_working_copy, schema)
+      files_to_delete = [version_update_sql.path, version_rollback_sql.path]
+      files_to_delete << version_preparation_txt.path if File.exists? version_preparation_txt.path
+  
+      asvc.vc.delete files_to_delete
+      asvc.vc.commit(asvc.vc_working_copy.path, "TOOL Delete version #{schema_version} SQL for #{activity.app.name} schema #{schema}")
+      
+      uploaded! true
+    rescue
+      raise  
+    end
   end
 
-  def add_version_sql_to_version_control(update_sql, rollback_sql, db_schema, vc_username, vc_password)
-    vc_tools = init_vc(vc_password, vc_username)
-    
-    version_update_sql, version_rollback_sql = version_sql_working_copy_paths(vc_tools.vc_working_copy, db_schema)
-    version_update_sql.print!(update_sql)
-    version_rollback_sql.print!(rollback_sql)
+  private
 
-    logger.info "WC PATH :" << vc_tools.vc_working_copy.path
-
-    vc_tools.vc.add(rio(vc_tools.vc_working_copy, activity.schema).path)
-    vc_tools.vc.commit(vc_tools.vc_working_copy.path, "TOOL Add version #{schema_version} SQL for #{activity.app.name} schema #{schema}")
-  end
-
-  def delete_version_sql_from_version_control(db_schema, vc_username, vc_password)
-    vc_tools = init_vc(vc_password, vc_username)
-
-    version_update_sql, version_rollback_sql = version_sql_working_copy_paths(vc_tools.vc_working_copy, db_schema)
-    vc_tools.vc.delete(version_update_sql.path)
-    vc_tools.vc.delete(version_rollback_sql.path)
-
-    vc_tools.vc.commit([version_update_sql.path, version_rollback_sql.path], "TOOL Delete version #{schema_version} SQL for #{activity.app.name} schema #{schema}")
-  end
-
-  def init_vc(vc_password, vc_username)
+  def init_asvc(vc_password, vc_username)
     if activity.app.vc_path.blank?
       raise Brazil::VersionControlException, "the application must have an Version Control Path set"
     end
@@ -219,8 +215,8 @@ class Version < ActiveRecord::Base
   end
 
   def version_sql_working_copy_paths(version_working_copy, db_schema)
-    version_sql_dir = rio(version_working_copy, activity.schema, activity.db_type.downcase).mkpath
-    [rio(version_sql_dir, "#{db_schema}-#{schema_version}-update.sql").mode("w+"), rio(version_sql_dir, "#{db_schema}-#{schema_version}-rollback.sql").mode("w+")]
+    version_sql_dir = rio(version_working_copy, schema, activity.db_type.downcase)
+    [rio(version_sql_dir, "#{db_schema}-#{schema_version}-update.sql").mode("w+"), rio(version_sql_dir, "#{db_schema}-#{schema_version}-rollback.sql").mode("w+"), rio(version_sql_dir, "#{db_schema}-#{schema_version}-preparation.txt").mode("w+")]
   end
 
   def check_no_duplicate_schema_db

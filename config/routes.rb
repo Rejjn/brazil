@@ -90,6 +90,7 @@ Brazil::Application.routes.draw do
           put :test_update
           put :test_rollback
           put :upload
+          put :remove
           put :deployed
         end
       end

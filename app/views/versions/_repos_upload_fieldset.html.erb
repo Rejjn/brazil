@@ -2,12 +2,17 @@
   <legend>Source control repository upload</legend>
   <div><strong>Uploaded</strong> <%= version_state_img version, :uploaded %></div>
   
-  <div>
-      <% unless version.tested? %>
-        <b style="color: red">Don't upload untested scripts!</b>
-      <% end %>
-      <%= render :partial => 'shared/vc_credentials_form' %>
-      <br /><%= submit_tag 'Upload', :class => 'execute_button', :disabled => !version.tested?%>
-      
-  </div>
+  <% unless version.uploaded? %>
+    <div>
+      <%= form_for(version, :url => upload_app_activity_version_path(activity.app, activity, version)) do |f| %>
+        <%= render :partial => 'shared/form_error', :locals => {:f => f} %>
+  
+        <% unless version.tested? %>
+          <b style="color: red">Don't upload untested scripts!</b>
+        <% end %>
+        <%= render :partial => 'shared/vc_credentials_form' %>
+        <br /><%= submit_tag 'Upload', :class => 'execute_button', :disabled => !version.tested?%>
+      <% end %>      
+    </div>
+  <% end %>
 </fieldset>

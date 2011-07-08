@@ -119,7 +119,7 @@ class VersionsController < ApplicationController
     respond_to do |format|
       if @version.errors.empty? && @run_successfull
         flash[:notice] = "Executed Update SQL"
-        format.html { render :action => 'show' }
+        format.html { redirect_to app_activity_version_path(@activity.app, @activity, @version) }
         format.xml  { head :ok }
         format.json  { head :ok }
       else
@@ -145,8 +145,7 @@ class VersionsController < ApplicationController
     respond_to do |format|
       if @version.errors.empty? && @run_successfull
         flash[:notice] = "Executed Rollback SQL"
-        #format.html { redirect_to app_activity_version_path(@activity.app, @activity, @version) }
-        format.html { render :action => 'show' }
+        format.html { redirect_to app_activity_version_path(@activity.app, @activity, @version) }
         format.xml  { head :ok }
         format.json  { head :ok }
       else
@@ -164,13 +163,15 @@ class VersionsController < ApplicationController
     @version = @activity.versions.find(params[:id])
 
     respond_to do |format|
-      if @version.update_attributes(params[:version])
-        @activity.deployed!
-        flash[:notice] = "Version '#{@version}' is now set as deployed"
+      begin 
+        @version.add_to_version_control(params[:vc_username], params[:vc_password])
+        
+        flash[:notice] = "Successfully uploaded version '#{@version}' to the source version control repos"
         format.html { redirect_to app_activity_version_path(@activity.app, @activity, @version) }
         format.xml  { head :ok }
         format.json  { head :ok }
-      else
+      rescue => e
+        flash[:error] = "Failed to upload version '#{@version}' to source version control! (#{e})"
         format.html { render :action => 'show' }
         format.xml  { render :xml => @version.errors, :status => :unprocessable_entity }
         format.json { render :json => @version.errors, :status => :unprocessable_entity }
@@ -178,14 +179,37 @@ class VersionsController < ApplicationController
     end
   end
 
-  # PUT /apps/:app_id/activities/:activity_id/versions/1/deploy.format
-  def deploy
+  # PUT /apps/:app_id/activities/:activity_id/versions/1/remove.format
+  def remove
     @activity = Activity.find(params[:activity_id])
     @version = @activity.versions.find(params[:id])
 
     respond_to do |format|
-      if @version.update_attributes(params[:version])
-        @activity.deployed!
+      begin 
+        @version.delete_from_version_control(params[:vc_username], params[:vc_password])
+        
+        flash[:notice] = "Successfully removed version '#{@version}' from the source version control repos"
+        format.html { redirect_to app_activity_version_path(@activity.app, @activity, @version) }
+        format.xml  { head :ok }
+        format.json  { head :ok }
+      rescue => e
+        flash[:error] = "Failed to remove version '#{@version}' from source version control! (#{e})"
+        format.html { render :action => 'show' }
+        format.xml  { render :xml => @version.errors, :status => :unprocessable_entity }
+        format.json { render :json => @version.errors, :status => :unprocessable_entity }
+      end
+    end
+  end
+
+  # PUT /apps/:app_id/activities/:activity_id/versions/1/deployed.format
+  def deployed
+    @activity = Activity.find(params[:activity_id])
+    @version = @activity.versions.find(params[:id])
+    @activity.deployed!
+    @version.deployed!
+
+    respond_to do |format|
+      if @version.save && @activity.save
         flash[:notice] = "Version '#{@version}' is now set as deployed"
         format.html { redirect_to app_activity_version_path(@activity.app, @activity, @version) }
         format.xml  { head :ok }

@@ -26,3 +26,7 @@
 <%# end %>
 
 <%= render :partial => 'repos_upload_fieldset', :locals => {:version => @version, :activity => @activity} %>
+
+<% if @version.uploaded? && !@version.deployed? %>
+  <%= render :partial => 'repos_remove_fieldset', :locals => {:version => @version, :activity => @activity} %>
+<% end %>

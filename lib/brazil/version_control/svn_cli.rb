@@ -82,6 +82,8 @@ module Brazil
         pid, stdin, stdout, stderr = Open4.popen4("#{svn_bin} add #{working_copy_paths.join(' ')}")
         ignored, status = Process::waitpid2 pid
         
+        puts "add: #{stdout.gets}"
+        
         raise Brazil::Error, "Failed to add #{working_copy_paths.join(',')} to working copy, #{stderr.gets}" if status.exitstatus != 0
       rescue Brazil::Error => svn_exception
         raise Brazil::VersionControlException, "Could not add to working copy (#{svn_exception})", caller
@@ -109,6 +111,8 @@ module Brazil
       begin
         pid, stdin, stdout, stderr = Open4.popen4("#{svn_bin} commit -m '#{commit_message}' #{working_copy_paths.join(' ')}")
         ignored, status = Process::waitpid2 pid
+        
+        puts "commit: #{stdout.gets}"
         
         raise Brazil::Error, "Failed to commit #{working_copy_paths.join(',')} to working copy, #{stderr.gets}" if status.exitstatus != 0
       rescue Brazil::Error => svn_exception
