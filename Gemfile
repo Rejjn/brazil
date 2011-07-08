@@ -14,6 +14,7 @@ gem 'net-ldap'
 gem 'rio', '0.4.4'
 gem 'httpclient'
 gem 'cobravsmongoose'
+gem 'open4'
 
 # For testing
 group :development, :test do

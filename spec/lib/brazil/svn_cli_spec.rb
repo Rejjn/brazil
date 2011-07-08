@@ -19,16 +19,16 @@ describe Brazil::VersionControl::SvnCli do
     @svn_cli = nil
   end
 
-  describe "when creating a new SVN CLI instance" do
+  describe "creating a new SVN CLI instance" do
     it "should successfully return a SVN CLI object" do
-      svn_cli = Brazil::VersionControl::SVNCLI.new('http://repository_uri/', 'username', 'password')
-      svn_cli.class.should == Brazil::VersionControl::SVNCLI 
+      svn_cli = Brazil::VersionControl::SvnCli.new('http://repository_uri/', 'username', 'password')
+      svn_cli.class.should == Brazil::VersionControl::SvnCli 
     end
   end
   
   describe "doing SVN checkout" do
     it "should give a working copy at that the given path if SVN URI is valid" do
-      svn_cli = Brazil::VersionControl::SVNCLI.new(SVN_URI, SVN_READ_USER, SVN_READ_PASSWORD)
+      svn_cli = Brazil::VersionControl::SvnCli.new(SVN_URI, SVN_READ_USER, SVN_READ_PASSWORD)
       svn_cli.checkout(@wc_tmp)
       
       File.directory?(@wc_tmp).should == true
@@ -36,7 +36,7 @@ describe Brazil::VersionControl::SvnCli do
     end
     
     it "should result in an error and no working copy if SVN URI is invalid" do
-      svn_cli = Brazil::VersionControl::SVNCLI.new('http://this.repository_uri/is/not/valid', SVN_READ_USER, SVN_READ_PASSWORD)
+      svn_cli = Brazil::VersionControl::SvnCli.new('http://this.repository_uri/is/not/valid', SVN_READ_USER, SVN_READ_PASSWORD)
       expect { svn_cli.checkout(@wc_tmp)}.to raise_error Brazil::VersionControlException
       File.directory?(@wc_tmp).should == false
     end
@@ -47,7 +47,7 @@ describe Brazil::VersionControl::SvnCli do
     before(:all) do
       @not_wc = '/tmp/rspec/not_working_copy'
       Dir.mkdir @not_wc
-      @svn_cli = Brazil::VersionControl::SVNCLI.new(SVN_URI, SVN_READ_USER, SVN_READ_PASSWORD)
+      @svn_cli = Brazil::VersionControl::SvnCli.new(SVN_URI, SVN_READ_USER, SVN_READ_PASSWORD)
     end
     
     after(:all) do
@@ -73,7 +73,7 @@ describe Brazil::VersionControl::SvnCli do
     before(:all) do
       @add_not_in_wc = '/tmp/rspec/add_file1'
       File.new(@add_not_in_wc, 'w') << 'asdfasdfasdfasdf'
-      @svn_cli = Brazil::VersionControl::SVNCLI.new(SVN_URI, SVN_READ_USER, SVN_READ_PASSWORD)
+      @svn_cli = Brazil::VersionControl::SvnCli.new(SVN_URI, SVN_READ_USER, SVN_READ_PASSWORD)
     end
     
     after(:all) do
@@ -95,7 +95,7 @@ describe Brazil::VersionControl::SvnCli do
     end
     
     it "should add the paths to working copy" do
-      @svn_cli = Brazil::VersionControl::SVNCLI.new(SVN_URI, SVN_READ_USER, SVN_READ_PASSWORD)
+      @svn_cli = Brazil::VersionControl::SvnCli.new(SVN_URI, SVN_READ_USER, SVN_READ_PASSWORD)
       @svn_cli.checkout(@wc_tmp)
 
       @add_in_wc1 = "#{@wc_tmp}/add_file1"
@@ -115,7 +115,7 @@ describe Brazil::VersionControl::SvnCli do
     before(:all) do
       @add_not_in_wc = '/tmp/rspec/add_file1'
       File.new(@add_not_in_wc, 'w') << 'asdfasdfasdfasdf'
-      @svn_cli = Brazil::VersionControl::SVNCLI.new(SVN_URI, SVN_READ_USER, SVN_READ_PASSWORD)
+      @svn_cli = Brazil::VersionControl::SvnCli.new(SVN_URI, SVN_READ_USER, SVN_READ_PASSWORD)
     end
     
     after(:all) do
@@ -158,7 +158,7 @@ describe Brazil::VersionControl::SvnCli do
     before(:all) do
       @add_not_in_wc = '/tmp/rspec/add_file1'
       File.new(@add_not_in_wc, 'w') << 'asdfasdfasdfasdf'
-      @svn_cli = Brazil::VersionControl::SVNCLI.new(SVN_URI, SVN_READ_USER, SVN_READ_PASSWORD)
+      @svn_cli = Brazil::VersionControl::SvnCli.new(SVN_URI, SVN_READ_USER, SVN_READ_PASSWORD)
     end
     
     after(:all) do
@@ -190,7 +190,7 @@ describe Brazil::VersionControl::SvnCli do
     
     describe "that is successfull" do
       it "should commit the paths to the repos" do
-        svn_cli = Brazil::VersionControl::SVNCLI.new(SVN_URI, SVN_WRITE_USER, SVN_WRITE_PASSWORD)
+        svn_cli = Brazil::VersionControl::SvnCli.new(SVN_URI, SVN_WRITE_USER, SVN_WRITE_PASSWORD)
         svn_cli.checkout(@wc_tmp)
         
         @new_files = {}
