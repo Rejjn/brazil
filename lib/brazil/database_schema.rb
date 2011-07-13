@@ -101,9 +101,17 @@ module Brazil
   
       begin
         db_connection = create_db_connection
-        version_rows = db_connection.select_all("SELECT * FROM #{@db_schema}.schema_versions ORDER BY major ASC, minor ASC, patch ASC")
-        version_rows.each do |version|
-          schema_versions << Brazil::SchemaRevision.new(version['MAJOR'], version['MINOR'], version['PATCH'], version['CREATED'], version['DESCRIPTION'])
+        case @db_type
+          when TYPE_MYSQL
+            version_rows = db_connection.select_all("SELECT major, minor, patch, created, description FROM #{@db_schema}.schema_versions ORDER BY major ASC, minor ASC, patch ASC")
+            version_rows.each do |version|
+              schema_versions << Brazil::SchemaRevision.new(version[0], version[1], version[2], version[3], version[4])
+            end
+          when TYPE_ORACLE 
+            version_rows = db_connection.select_all("SELECT * FROM #{@db_schema}.schema_versions ORDER BY major ASC, minor ASC, patch ASC")
+            version_rows.each do |version|
+              schema_versions << Brazil::SchemaRevision.new(version['MAJOR'], version['MINOR'], version['PATCH'], version['CREATED'], version['DESCRIPTION'])
+            end
         end
       rescue DBI::DatabaseError => exception
         # No schema_versions table found, return no schema version
@@ -134,6 +142,36 @@ module Brazil
       
       case @db_type
         when TYPE_MYSQL
+          sql_by_statement = update_sql.split(/;/)
+    
+          sql_by_statement.each do |sql_statement|
+            found_match = false
+            
+            sql_statement.scan(/create (table|index|SEQUENCE|CONSTRAINT) ([`\w_\-\d]+\.[`\w_\-\d]+)/i) do |m|
+              found_match = true
+              rollback_sql << "DROP #{m[0]} #{m[1]};\n\n"
+            end
+            
+            sql_statement.scan(/insert into ([`\w_\-\d]+\.[`\w_\-\d, ]+)\s*\((.+?)\) VALUES\s*\((.*)\)/i) do |m|
+              keys = m[1].split(',')
+              values = m[2].split(',')
+              
+              if keys.count == values.count 
+                found_match = true
+              
+                where = ""
+                keys.each do |key|
+                  where << key + " = " + values.shift + ' AND '
+                end
+              
+                rollback_sql << "DELETE FROM #{m[0]} WHERE #{where[0...-5]};\n\n"
+              end
+            end
+            
+            unless found_match
+              rollback_sql << "-- ** ADD ROLLBACK FOR: **\n-- " + sql_statement.strip.gsub(/\n/, "\n-- ") + ";\n\n"
+            end
+          end
 
         when TYPE_ORACLE 
           sql_by_statement = update_sql.split(/;/)
@@ -156,26 +194,25 @@ module Brazil
               rollback_sql << "REVOKE #{m[0]} ON #{m[1]} FROM #{m[2]};\n\n"
             end
             
-            sql_statement.scan(/insert into ([\w_\-\d]+\.[\w_\-\d, ]+)\s*\((.+?)\) VALUES\s*\((.*)\)/i) do |m|
-              keys = m[1].split(',')
-              values = m[2].split(',')
-              
-              if keys.count == values.count 
-                found_match = true
-              
-                where = ""
-                keys.each do |key|
-                  where << key + " = " + values.shift + ' AND '
-                end
-              
-                rollback_sql << "DELETE FROM #{m[0]} WHERE #{where[0...-5]};\n\n"
-              end
-            end
+#            sql_statement.scan(/insert into ([\w_\-\d]+\.[\w_\-\d, ]+)\s*\((.+?)\) VALUES\s*\((.*)\)/i) do |m|
+#              keys = m[1].split(',')
+#              values = m[2].split(',')
+#              
+#              if keys.count == values.count 
+#                found_match = true
+#              
+#                where = ""
+#                keys.each do |key|
+#                  where << key + " = " + values.shift + ' AND '
+#                end
+#              
+#                rollback_sql << "DELETE FROM #{m[0]} WHERE #{where[0...-5]};\n\n"
+#              end
+#            end
             
             unless found_match
               rollback_sql << "-- ** ADD ROLLBACK FOR: **\n-- " + sql_statement.strip.gsub(/\n/, "\n-- ") + ";\n\n"
             end
-            
           end
       end
       
@@ -277,9 +314,9 @@ module Brazil
       
       case db_type
         when TYPE_ORACLE then
+          schema_regexp = '[\w\d\_\-]+'
+
           sql.each do |line|
-            schema_regexp = '[\w\d\_\-]+' 
-            
             #find all occurrences of schema name
             line.gsub!(/\s+#{schema_regexp}\.(#{schema_regexp})/, " #{schema_name}.\\1")
             line.gsub!(/VALUES\s*\(\s*#{schema_regexp}\.(#{schema_regexp})/, "VALUES(#{schema_name}.\\1")
@@ -295,13 +332,14 @@ module Brazil
             line.gsub!(/--.*?(\n|$)/, '')
           end
         when TYPE_MYSQL then
+          schema_regexp = '[`\w\d\_\-]+'
           
           sql.each do |line|
             line.gsub!(/CREATE DATABASE \w+;[\s\n\r]+/, "")
             line.gsub!(/USE \w+;[\s\n\r]+/, "")
             #line.gsub!(/\/\*\!.+;[\s\n\r]+/, "")
             
-            line.gsub!(/\s+[\w\d_-]+\.(\w+)/i, " #{schema_name}.\\1")
+            line.gsub!(/\s+[`\w\d_-]+\.(#{schema_regexp})/i, " #{schema_name}.\\1")
         end
       end
 

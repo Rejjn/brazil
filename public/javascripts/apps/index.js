@@ -1,5 +1,6 @@
 $(document).ready(function() {
   brazil.on_load.general();
+  brazil.move.scrollable("#app_forms");
 
   // Edit App name
   brazil.form.inline({

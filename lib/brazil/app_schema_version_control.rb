@@ -51,7 +51,7 @@ module Brazil
           versions = find_versions(schema).reverse!
     
           if versions.count == 0
-            return 
+            return SchemaRevision.new(1, 0, 0) 
           end  
       
           return versions[0].next

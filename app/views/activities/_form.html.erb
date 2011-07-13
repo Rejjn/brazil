@@ -30,16 +30,18 @@
 </p>
 <div class="span-10 last">
   <div class="span-5">
+    <%= f.label :schema, 'Schema Name' %> (Case sensitive)<br />
+    <%= f.text_field :schema, :class => 'span-5' %>
+    <br/>
+    <div class="tip">Selecting a schema name will automatically load any previous versions into the "base version" select box.</div>
+  </div>
+
+  <div class="span-5 last">
     <%= f.label "db_instance_id", "Schema type" %><br />
     <%= f.select :db_type, DbInstance.db_types, {:include_blank => '-- Select --'}, {:class => 'span-5'} %>
     
     <%= f.label "base_version" %><br />
     <%= f.select :base_version, base_versions, {:include_blank => '-- Select --'}, {:class => 'span-5'} %>
-  </div>
-
-  <div class="span-5 last">
-    <%= f.label :schema, 'Schema Name' %> (Case sensitive)<br />
-    <%= f.text_field :schema, :class => 'span-5' %>
   </div>
 </div>
 

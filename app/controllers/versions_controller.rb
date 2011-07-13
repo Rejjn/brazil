@@ -41,7 +41,7 @@ class VersionsController < ApplicationController
     
     asvc = Brazil::AppSchemaVersionControl.new(:vc_type => Brazil::AppSchemaVersionControl::TYPE_SUBVERSION, :vc_path => @activity.app.vc_path, :vc_uri => ::AppConfig.vc_uri, :vc_tmp_dir => ::AppConfig.vc_dir)
     @current_lastest = asvc.find_versions(@activity.schema).last
-    @new_version = asvc.find_next_schema_version(@activity.schema, @version_bump_type)
+    @version.schema_version = asvc.find_next_schema_version(@activity.schema, @version_bump_type).to_s
 
     respond_to do |format|
       format.html # new.html.erb
@@ -62,7 +62,11 @@ class VersionsController < ApplicationController
   def create
     @activity = Activity.find(params[:activity_id])
     @version = @activity.versions.build(params[:version])
-    @version.set_schema_version params[:new_version]['major'], params[:new_version]['minor'], params[:new_version]['patch']
+    if params[:new_version]
+      @version.set_schema_version params[:new_version]['major'], params[:new_version]['minor'], params[:new_version]['patch']
+    else
+      @version.set_schema_version 1, 0, 0
+    end
     @version.state = Version::STATE_CREATED
 
     respond_to do |format|
@@ -90,7 +94,10 @@ class VersionsController < ApplicationController
     @version = @activity.versions.find(params[:id])
     @version.attributes = params[:version]
     @version.state = Version::STATE_CREATED
-    @version.set_schema_version params[:new_version]['major'], params[:new_version]['minor'], params[:new_version]['patch']
+    
+    if params[:new_version]
+      @version.set_schema_version params[:new_version]['major'], params[:new_version]['minor'], params[:new_version]['patch']
+    end
 
     respond_to do |format|
       if @version.errors.empty? && @version.save
@@ -184,6 +191,10 @@ class VersionsController < ApplicationController
   def remove
     @activity = Activity.find(params[:activity_id])
     @version = @activity.versions.find(params[:id])
+
+    if @version.deployed?
+      format.html { render :action => 'show' }
+    end
 
     respond_to do |format|
       begin 

@@ -16,6 +16,7 @@
     <span><strong>Developer</strong> <%=h change.developer %></span>
     <span><strong>State</strong> <%=h change.state %></span>
   </div>
+  <br class="clear"/>
   <ul class="actions clearfix">
     <% if show_change_dev_actions(change) && !defined? hide_buttons && !hide_buttons %>
       <li><%= button_to('Execute', execute_app_activity_change_path(change.activity.app, change.activity, change), :class => 'execute_change_button') %></li>

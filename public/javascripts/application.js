@@ -37,7 +37,7 @@ var brazil = function() {
       jQuery(settings.inserted_fieldset).remove();
       jQuery(settings.show_form).show();
 
-      settings.done();
+      //settings.done();
 
       return false;
     });
@@ -171,7 +171,11 @@ var brazil = function() {
     move : {
       scrollable: function(id) {
         jQuery(id).css("position", "relative");
-        jQuery(id).scrollFollow();
+        jQuery(id).scrollFollow({
+          speed: 1000,
+          offset: 20,
+          relativeTo: 'top',
+        });
       }
     },
     flash : {

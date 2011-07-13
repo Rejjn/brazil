@@ -98,7 +98,7 @@ class ChangesController < ApplicationController
     respond_to do |format|
       if @change.save
         
-        if params[:create_change_execute_button]
+        if params[:edit_change_execute_submit]
           @run_successfull, @deployment_results = @change.execute()
         end        
         

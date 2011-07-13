@@ -3,6 +3,8 @@ class Activity < ActiveRecord::Base
   STATE_VERSIONED = 'versioned'
   STATE_DEPLOYED = 'deployed'
 
+  NO_BASE_VERSION = "No base version"
+
   belongs_to :app
   belongs_to :db_instance
   
@@ -10,7 +12,7 @@ class Activity < ActiveRecord::Base
   has_many :changes, :order => "created_at ASC", :dependent => :destroy
 
   validates_associated :db_instance
-  validates_presence_of :name, :schema, :db_type, :dev_schema, :dev_user, :dev_password, :base_version
+  validates_presence_of :name, :schema, :db_type, :dev_schema, :dev_user, :dev_password, :base_version, :db_instance_id
 
   # FIXME: Add before_save check state
 
@@ -43,7 +45,8 @@ class Activity < ActiveRecord::Base
   def execute
     begin
       current_versions = db_instance_dev.deployed_versions(dev_user, dev_password, dev_schema)
-      unless current_versions.last.to_s == base_version
+      
+      if base_version != Activity::NO_BASE_VERSION && current_versions.last.to_s != base_version
         db_instance_dev.deploy_update(app, schema, dev_user, dev_password, dev_schema, base_version)
       end
       
@@ -65,13 +68,12 @@ class Activity < ActiveRecord::Base
   end
 
   def reset
-    db_instance.wipe_schema(dev_user, dev_password, dev_schema)    
-    db_instance.deploy_update(app, schema, dev_user, dev_password, dev_schema, base_version)
+    db_instance.wipe_schema(dev_user, dev_password, dev_schema)
+    db_instance.deploy_update(app, schema, dev_user, dev_password, dev_schema, base_version) unless base_version == Activity::NO_BASE_VERSION
     
     changes.each do |change|
       change.update_attribute(:state, Change::STATE_SAVED)
     end
-    
   end
 
   def to_s

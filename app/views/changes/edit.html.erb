@@ -3,7 +3,9 @@
 	<a href="#" class="form_close" style="display: none;"><img src="/images/forms/x.gif" /></a>
 	<%= form_for(@change, :url => app_activity_change_path(@activity.app, @activity, @change)) do |f| %>
     <%= render :partial => "changes/form", :locals => {:f => f} %>
-    <%= f.submit 'Save & Execute', :name => 'edit_change_execute_submit', :id => 'edit_change_execute_submit' %>
-    <%= f.submit 'Only Save', :id => 'edit_change_save_submit', :name => 'change_save_submit' %>
+    <ul class="actions">
+      <li><%= f.submit 'Only Save', :class => 'button clean_button', :id => 'edit_change_save_submit', :name => 'change_save_submit' %></li>
+      <li><%= f.submit 'Save & Execute', :class => 'button clean_button', :name => 'edit_change_execute_submit', :id => 'edit_change_execute_submit' %></li>      
+    </ul>
 	<% end %>
 </fieldset>

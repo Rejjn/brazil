@@ -29,17 +29,29 @@
 <div>
   <div class="span-5">
     <%= label_tag :schema_version, 'Schema Version Type' %><br />
-    <%= select_tag(:version_type, options_for_select([['Major', :major], ['Minor', :minor], ['Patch', :patch]], :minor)) %>
+    <% if version.initial_version? %>
+      Major (initial_version)
+    <% else %>
+      <%= select_tag(:version_type, options_for_select([['Major', :major], ['Minor', :minor], ['Patch', :patch]], :minor)) %>
+    <% end %>
   </div>
   
   <div class="span-5">  
     <strong>Current latest</strong><br>
-    <span class="current_version"><%= @current_lastest %></span>
+    <% if version.initial_version? %>
+      -
+    <% else %>
+      <span class="current_version"><%= @current_lastest %></span>
+    <% end %>
   </div>
   
   <div class="span-5 last">  
     <strong>New version number</strong><br>
-    <%= text_field_tag 'new_version[major]', new_version.major, :size => 2, :maxlength => 4 %>_<%= text_field_tag 'new_version[minor]', new_version.minor, :size => 2, :maxlength => 4 %>_<%= text_field_tag 'new_version[patch]', new_version.patch, :size => 2, :maxlength => 4 %>
+    <% if version.initial_version? %>
+      1_0_0  
+    <% else %>
+      <%= text_field_tag 'new_version[major]', version.schema_revision.major, :size => 2, :maxlength => 4 %>_<%= text_field_tag 'new_version[minor]', version.schema_revision.minor, :size => 2, :maxlength => 4 %>_<%= text_field_tag 'new_version[patch]', version.schema_revision.patch, :size => 2, :maxlength => 4 %>
+    <% end %>
   </div>
 </div>
 

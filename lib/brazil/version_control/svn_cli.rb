@@ -10,9 +10,6 @@ module Brazil
     SVN_BIN = ::AppConfig.svn_bin
 
     def initialize(repository_uri, username, password)
-      
-      puts "init svn cli: #{[repository_uri, username, password].inspect}"
-      
       @repository_uri = repository_uri
       @username = username
       @password = password

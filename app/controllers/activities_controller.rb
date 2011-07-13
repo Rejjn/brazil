@@ -9,7 +9,7 @@ class ActivitiesController < ApplicationController
     @app = App.find(params[:app_id])
     @activities = @app.activities.all(:order => 'updated_at DESC')
     @activity = @app.activities.build
-    @base_versions = ["No base version"]
+    @base_versions = [Activity::NO_BASE_VERSION]
 
     respond_to do |format|
       format.html do # index.html.erb
@@ -51,7 +51,7 @@ class ActivitiesController < ApplicationController
   def new
     @app = App.find(params[:app_id])
     @activity = @app.activities.build
-    @base_versions = ["No base version"]
+    @base_versions = [Activity::NO_BASE_VERSION]
 
     respond_to do |format|
       format.html do # new.html.erb
@@ -68,7 +68,7 @@ class ActivitiesController < ApplicationController
     
     @vscm = Brazil::AppSchemaVersionControl.new(:vc_type => Brazil::AppSchemaVersionControl::TYPE_SUBVERSION, :vc_path => @app.vc_path, :vc_uri => ::AppConfig.vc_uri)    
     @base_versions = @vscm.find_versions(@activity.schema)
-    @base_versions << "No base version" if @base_versions.count == 0
+    @base_versions << Activity::NO_BASE_VERSION if @base_versions.count == 0
     
     render :layout => false if request.xhr?
   end
@@ -112,9 +112,25 @@ class ActivitiesController < ApplicationController
     @app = App.find(params[:app_id])
     @activity = @app.activities.find(params[:id])
 
+    if params[:cancel_edit_activity_button]
+      respond_to do |format|
+        format.html do
+          if request.xhr? 
+            render :partial => 'shared/activity', :locals => { :activity => @activity }
+          else
+            redirect_to apps_url
+          end
+        end
+        
+        format.xml  { head :ok }
+      end
+          
+      return
+    end
+
     @vscm = Brazil::AppSchemaVersionControl.new(:vc_type => Brazil::AppSchemaVersionControl::TYPE_SUBVERSION, :vc_path => @app.vc_path, :vc_uri => ::AppConfig.vc_uri)    
     @base_versions = @vscm.find_versions(params[:arg])
-    @base_versions << "No base version" if @base_versions.count == 0
+    @base_versions << Activity::NO_BASE_VERSION if @base_versions.count == 0
 
     respond_to do |format|
       if @activity.update_attributes(params[:activity])
@@ -151,7 +167,7 @@ class ActivitiesController < ApplicationController
     end
 
     @activity.destroy
-    respond_with(@activity)
+    respond_with(@activity, :location => app_activities_url)
   end
   
   def execute
@@ -203,7 +219,7 @@ class ActivitiesController < ApplicationController
         @base_versions = @vscm.find_versions(params[:arg])
         
         if @base_versions.count == 0
-          @base_versions << "No base version"
+          @base_versions << Activity::NO_BASE_VERSION
         end
         
         format.html { render :layout =>  false } 

@@ -71,13 +71,17 @@ class Version < ActiveRecord::Base
       end
     end
     
-    if next_schema_version
-      self.schema_version = next_schema_version.to_s
-      self.create_schema_version = false
-    else
-      self.schema_version = '1_0_0'
+    if next_schema_version.to_s == '1_0_0' 
       self.create_schema_version = true
+    else
+      self.create_schema_version = false
     end
+    
+    self.schema_version = next_schema_version.to_s
+  end
+
+  def initial_version?
+    (schema_version.to_s == '1_0_0')
   end
 
   def merge_to_dev(update_sql, dev_db_instance_id, dev_schema, db_username, db_password)
@@ -165,8 +169,10 @@ class Version < ActiveRecord::Base
       asvc = init_asvc(vc_password, vc_username)
       
       version_update_sql, version_rollback_sql, version_preparation_txt = version_sql_working_copy_paths(asvc.vc_working_copy, schema)
+      
       version_update_sql.print!(SqlController.new.update_sql(self))
       version_rollback_sql.print!(SqlController.new.rollback_sql(self))
+      
       files_to_add = [version_update_sql.path, version_rollback_sql.path]
 
       unless preparation.empty?
@@ -174,10 +180,12 @@ class Version < ActiveRecord::Base
         files_to_add << version_preparation_txt.path
       end
   
-      logger.info "WC PATH :" << asvc.vc_working_copy.path
-      
+      if initial_version?
+        files_to_add = rio(asvc.vc_working_copy, schema).path
+      end
+
       asvc.vc.add(files_to_add)
-      asvc.vc.commit(asvc.vc_working_copy.path, "TOOL Add version #{schema_version} SQL for #{activity.app.name} schema #{schema}")
+      asvc.vc.commit(asvc.vc_working_copy.path, "TOOL Add version #{schema_version} SQL for #{activity.app.name}, schema #{schema}")
       
       uploaded!
     rescue
@@ -194,6 +202,10 @@ class Version < ActiveRecord::Base
       version_update_sql, version_rollback_sql, version_preparation_txt = version_sql_working_copy_paths(asvc.vc_working_copy, schema)
       files_to_delete = [version_update_sql.path, version_rollback_sql.path]
       files_to_delete << version_preparation_txt.path if File.exists? version_preparation_txt.path
+  
+      if initial_version?
+        files_to_delete = rio(asvc.vc_working_copy, schema).path
+      end
   
       asvc.vc.delete files_to_delete
       asvc.vc.commit(asvc.vc_working_copy.path, "TOOL Delete version #{schema_version} SQL for #{activity.app.name} schema #{schema}")
@@ -216,6 +228,7 @@ class Version < ActiveRecord::Base
 
   def version_sql_working_copy_paths(version_working_copy, db_schema)
     version_sql_dir = rio(version_working_copy, schema, activity.db_type.downcase)
+    version_sql_dir.mkpath
     [rio(version_sql_dir, "#{db_schema}-#{schema_version}-update.sql").mode("w+"), rio(version_sql_dir, "#{db_schema}-#{schema_version}-rollback.sql").mode("w+"), rio(version_sql_dir, "#{db_schema}-#{schema_version}-preparation.txt").mode("w+")]
   end
 

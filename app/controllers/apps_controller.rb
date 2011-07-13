@@ -74,6 +74,22 @@ class AppsController < ApplicationController
   def update
     @app = App.find(params[:id])
 
+    if params[:cancel_edit_app_button]
+      respond_to do |format|
+        format.html do
+          if request.xhr? 
+            render :partial => 'app', :locals => { :app => @app }
+          else
+            redirect_to apps_url
+          end
+        end
+        
+        format.xml  { head :ok }
+      end
+          
+      return
+    end
+
     respond_to do |format|
       if @app.update_attributes(params[:app])
         format.html do

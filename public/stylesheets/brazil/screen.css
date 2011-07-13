@@ -103,20 +103,21 @@ a:hover {
 
 .actions li a, .actions li input, input.button {
   display:block;
-  padding:2px 18px;
-  border:1px solid #C6D880;
+  padding: 2px 18px;
+  border: 1px solid #C6D880;
   background:#E6EFC2;
   color:#264409;
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
   border-radius: 4px;
   text-decoration:none;
-  font-size: 100%;
+  font-size: 12px;
   cursor: pointer;
 }
 
-.actions li input, input.button_normal {
-  font-size: 95%;
+.actions li input, input.button {
+  padding: 3px 18px;
+  font-size: 12px;
 }
 
 textarea {
@@ -413,4 +414,9 @@ tr.db_instance.test {
 
 tr.db_instance.prod {
   color: #6D924B;
+}
+
+.tip {
+  font-size: 90%;
+  padding: 5px 5px 5px 0;
 }

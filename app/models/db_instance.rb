@@ -11,8 +11,12 @@ class DbInstance < ActiveRecord::Base
 
   validates_presence_of :db_alias, :host, :port, :db_env, :db_type
 
-  scope :env_test, :conditions => {:db_env => ENV_TEST}
-  scope :env_dev, :conditions => {:db_env => ENV_DEV}
+  scope :env_test, :conditions => {:db_env => ENV_TEST}, :order => 'db_alias ASC' 
+  scope :env_dev, :conditions => {:db_env => ENV_DEV}, :order => 'db_alias ASC'
+
+  def self.by_db_type db_type 
+    where(:db_type => db_type).order('db_alias ASC')
+  end
 
   def self.db_environments
     [ENV_DEV, ENV_TEST, ENV_PROD]
@@ -32,7 +36,7 @@ class DbInstance < ActiveRecord::Base
   end
 
   def wipeable_schemas?
-    wipeable_schemas
+    (wipeable_schemas || db_type == TYPE_MYSQL)
   end
 
   def to_s
@@ -70,9 +74,12 @@ class DbInstance < ActiveRecord::Base
   end
 
   def wipe_schema(username, password, schema) 
-    if wipeable_schemas?
+    if wipeable_schemas? && db_type == TYPE_ORACLE
       serenity_api = Brazil::SerenityIntegration.new
       serenity_api.wipe_schema(db_type, :schema => schema, :port => port)
+    elsif db_type == TYPE_MYSQL
+      db = Brazil::DatabaseSchema.new(host, port, db_type, schema, username, password)
+      db.execute_sql("DROP DATABASE `#{schema}`")
     end
   end
 

@@ -24,7 +24,6 @@ class DeployController < ApplicationController
         format.html { render :action => "show_app" }
         format.xml
       rescue => exception
-        compile_grouped_dbi_list
         flash[:error] = "Error while getting database schemas #{exception} (#{exception.class})"
         format.html { render :action => "index" }
         format.xml  { render :status => :unprocessable_entity }
@@ -44,10 +43,11 @@ class DeployController < ApplicationController
         find_selected_schema params[:schema]
         find_db_instances @schema[:type]
             
+        puts @db_instances.inspect
+            
         format.html { render :action => "show_schema" }
         format.xml
       rescue => exception
-        compile_grouped_dbi_list
         flash[:error] = "Error while getting database instances! #{exception} (#{exception.class})"
         format.html { render :action => "show_app", :status => :unprocessable_entity }
         format.xml  { render :status => :unprocessable_entity }
@@ -66,7 +66,7 @@ class DeployController < ApplicationController
         
         find_selected_schema params[:schema]
         find_db_instances @schema[:type]
-            
+        
         @db_instance = DbInstance.find(params[:db_instance])
         set_credentials
         fetch_version_info
@@ -74,9 +74,9 @@ class DeployController < ApplicationController
         format.html { render :action => "show_instance" }
         format.xml
       rescue => exception
-        compile_grouped_dbi_list
+        session.delete :db_credentials
         flash[:error] = "#{exception} (#{exception.class})"
-        format.html { render :action => "show_schema", :status => :unprocessable_entity }
+        format.html { render :action => "show_instance", :status => :unprocessable_entity }
         format.xml  { render :status => :unprocessable_entity }
       end
     end
@@ -115,12 +115,12 @@ class DeployController < ApplicationController
           load_for_deploy_fieldset
           format.html { render :partial => 'deploy_fieldset' }
           format.xml
-        #rescue => e
-#          flash[:error] = "Failed to update database schema! (#{e})"
-#          load_for_deploy_fieldset
-#
-#          format.html { render :partial => 'update_fieldset', :locals => {:update_versions => @update_versions}, :status => :unprocessable_entity }
-#          format.xml  { render :status => :unprocessable_entity }
+        rescue => e
+          flash[:error] = "Failed to update database schema! (#{e})"
+          load_for_deploy_fieldset
+
+          format.html { render :partial => 'update_fieldset', :locals => {:update_versions => @update_versions}, :status => :unprocessable_entity }
+          format.xml  { render :status => :unprocessable_entity }
         end    
       else
         flash[:error] = "Target version is not set"
@@ -185,7 +185,8 @@ class DeployController < ApplicationController
         flash[:error] = "Failed to wipe database schema! (#{e})"
         
         load_for_deploy_fieldset
-        format.html { render :partial => 'deploy_fieldset', :status => :unprocessable_entity }
+        format.html { render :partial => 'wipe_fieldset', :status => :unprocessable_entity }
+        #format.html { render :partial => 'deploy_fieldset', :status => :unprocessable_entity }
         format.xml  { render :status => :unprocessable_entity }
       end    
     end    
@@ -208,18 +209,6 @@ class DeployController < ApplicationController
     add_crumb 'Deploy Database', deploy_path
   end  
 
-  def compile_grouped_dbi_list
-    @grouped_db_instances = {}
-    DbInstance.db_environments.each do |env|
-      @grouped_db_instances[env] = []  
-    end
-    
-    all_db_instances = DbInstance.all
-    all_db_instances.each do |db|
-      @grouped_db_instances[db.db_env] << [db.db_alias, db.id]
-    end
-  end
-
   def set_app_schema_vc
     @vscm = Brazil::AppSchemaVersionControl.new(:vc_type => Brazil::AppSchemaVersionControl::TYPE_SUBVERSION, :vc_path => @app.vc_path, :vc_uri => ::AppConfig.vc_uri)
   end
@@ -241,7 +230,6 @@ class DeployController < ApplicationController
   end      
 
   def find_selected_schema schema
-    
     source, type = ''
     if @vc_schemas.include? schema
       source = 'subversion'
@@ -256,7 +244,11 @@ class DeployController < ApplicationController
   end
   
   def find_db_instances type
-    @db_instances = DbInstance.where(:db_type => type)
+    @db_instances = DbInstance.where(:db_type => type, :db_env => [DbInstance::ENV_DEV, DbInstance::ENV_TEST]).order('db_alias ASC')
+    @db_instances_grouped = { DbInstance::ENV_DEV => [], DbInstance::ENV_TEST => [] }
+    @db_instances.each do |db|
+      @db_instances_grouped[db.db_env] << [db.db_alias, db.id]
+    end
   end
   
   def set_credentials

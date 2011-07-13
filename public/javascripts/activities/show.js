@@ -77,6 +77,7 @@ var change_form = function(){
 
 $(document).ready(function() {
   brazil.on_load.general();
+  brazil.move.scrollable("#activity_forms");
 
   jQuery.each(jQuery('.attribute_warning'), function(index, value) {
     // brazil.warning.show(jQuery(value))
