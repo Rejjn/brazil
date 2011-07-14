@@ -34,6 +34,8 @@ class ActivitiesController < ApplicationController
     if latest_change
       @change.developer = latest_change.developer
     end
+    
+    latest_base_version?
 
     respond_to do |format|
       format.html do # show.html.erb
@@ -188,7 +190,8 @@ class ActivitiesController < ApplicationController
           @change = @activity.changes.build
           format.html { render :partial => "changes/changes", :locals => {:activity => @activity, :change => @change, :deployment_results => @deployment_results }}
           #format.html { render :partial => "changes/changes", :collection => @activity.changes } 
-        else 
+        else
+          latest_base_version?
           @change = @activity.changes.build
           format.html { render :action => 'show' }
         end
@@ -267,6 +270,7 @@ class ActivitiesController < ApplicationController
             @change = @activity.changes.build
             render :partial => "changes/changes", :locals => {:activity => @activity, :change => @change}
           else
+            latest_base_version?
             @change = @activity.changes.build
             render :action => "show"
           end
@@ -278,6 +282,19 @@ class ActivitiesController < ApplicationController
   end
 
   private
+
+  def latest_base_version?
+    unless @base_versions
+      @vscm = Brazil::AppSchemaVersionControl.new(:vc_type => Brazil::AppSchemaVersionControl::TYPE_SUBVERSION, :vc_path => @app.vc_path, :vc_uri => ::AppConfig.vc_uri) unless @vscm    
+      @base_versions = @vscm.find_versions(@activity.schema)
+    end
+    
+    puts "#{@activity.base_version} != #{@base_versions.last.to_s}"
+    
+    unless @activity.base_version == @base_versions.last.to_s
+      flash[:warning] = "Note: the chosen base version is not the latest found in the version control repos!"
+    end
+  end
 
   def add_controller_crumbs
     app = App.find(params[:app_id])
