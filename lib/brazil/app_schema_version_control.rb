@@ -95,7 +95,16 @@ module Brazil
     end
   
     def valid_next_version? schema, version
-      true
+      version = SchemaRevision.from_string(version.to_s) if version.respond_to?(:to_s) && !version.instance_of?(SchemaRevision)
+      current_versions = find_versions schema
+      
+      if current_versions.include? version
+        raise ValidVersionException, "The version #{version} already exists for the schema #{schema}"
+      elsif !(current_versions.last < version)
+        raise ValidVersionException, "#{version} is not a valid next version for the schema #{schema}, new versions must be higher than current highest version #{current_versions.last}"
+      end 
+        
+      return true
     end
   
     def vc_working_copy

@@ -24,6 +24,13 @@ class VersionsController < ApplicationController
     @activity = Activity.find(params[:activity_id])
     @version = Version.find(params[:id])
 
+    begin
+      asvc = Brazil::AppSchemaVersionControl.new(:vc_type => Brazil::AppSchemaVersionControl::TYPE_SUBVERSION, :vc_path => @activity.app.vc_path, :vc_uri => ::AppConfig.vc_uri, :vc_tmp_dir => ::AppConfig.vc_dir)
+      asvc.valid_next_version? @version.schema, @version.schema_version
+    rescue Brazil::ValidVersionException => e
+      flash[:warning] = e.to_s
+    end
+    
     respond_to do |format|
       format.html # show.html.erb
       format.xml  { render :xml => @version }

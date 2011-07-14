@@ -45,6 +45,7 @@
     <div class="messages">
       <div id="notice" class="box success" <%=raw 'style="display:none;"' unless flash[:notice] %>><%= flash[:notice] %></div>
       <div id="error" class="box error" <%=raw 'style="display:none;"' unless flash[:error] %>><%= flash[:error] %></div>
+      <div id="error" class="box notice" <%=raw 'style="display:none;"' unless flash[:warning] %>><%= flash[:warning] %></div>
       <% flash.discard %>
     </div>
 

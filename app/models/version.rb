@@ -61,9 +61,10 @@ class Version < ActiveRecord::Base
 
   def set_schema_version major, minor, patch
     begin
-      next_schema_version = Brazil::SchemaRevision.new(major, minor, patch) 
+      next_schema_version = Brazil::SchemaRevision.new(major, minor, patch)
+      self.schema_version = next_schema_version.to_s
       asvc = Brazil::AppSchemaVersionControl.new(:vc_type => Brazil::AppSchemaVersionControl::TYPE_SUBVERSION, :vc_path => activity.app.vc_path, :vc_uri => ::AppConfig.vc_uri, :vc_tmp_dir => ::AppConfig.vc_dir)
-      raise AppSchemaVersionControlException, 'That version is not a valid next version for that schema!' unless asvc.valid_next_version? activity.schema, next_schema_version
+      asvc.valid_next_version? activity.schema, next_schema_version
     rescue => exception
       unless exception.to_s =~ /reason_phrase=\"Not Found\"/ 
         errors.add(:base, "Could not lookup version for schema '#{schema}' (#{exception})")
@@ -76,8 +77,6 @@ class Version < ActiveRecord::Base
     else
       self.create_schema_version = false
     end
-    
-    self.schema_version = next_schema_version.to_s
   end
 
   def initial_version?
@@ -167,9 +166,9 @@ class Version < ActiveRecord::Base
   def add_to_version_control(vc_username, vc_password)
     begin 
       asvc = init_asvc(vc_password, vc_username)
+      asvc.valid_next_version? schema, schema_version
       
       version_update_sql, version_rollback_sql, version_preparation_txt = version_sql_working_copy_paths(asvc.vc_working_copy, schema)
-      
       version_update_sql.print!(SqlController.new.update_sql(self))
       version_rollback_sql.print!(SqlController.new.rollback_sql(self))
       

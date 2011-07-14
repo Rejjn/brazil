@@ -53,6 +53,10 @@ module Brazil
       to_a <=> other_version.to_a
     end
 
+    def ==(other_version)
+      major == other_version.major && minor == other_version.minor && patch == other_version.patch 
+    end
+
     def include?(other_version)
       (other_version.to_a.slice(0, to_a.length) <=> to_a) == 0
     end
