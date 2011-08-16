@@ -69,7 +69,19 @@ class Activity < ActiveRecord::Base
 
   def reset
     db_instance.wipe_schema(dev_user, dev_password, dev_schema)
-    db_instance.deploy_update(app, schema, dev_user, dev_password, dev_schema, base_version) unless base_version == Activity::NO_BASE_VERSION
+    result = db_instance.deploy_update(app, schema, dev_user, dev_password, dev_schema, base_version) unless base_version == Activity::NO_BASE_VERSION
+    
+    unless result[0]
+      fail_message = ''
+      result[1].each do |sql_result|
+        unless sql_result[:success]
+          fail_message = sql_result[:msg]
+          break
+        end
+      end
+      
+      raise Brazil::Error, fail_message
+    end
     
     changes.each do |change|
       change.update_attribute(:state, Change::STATE_SAVED)
