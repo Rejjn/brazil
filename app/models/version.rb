@@ -184,7 +184,7 @@ class Version < ActiveRecord::Base
       end
 
       asvc.vc.add(files_to_add)
-      asvc.vc.commit(asvc.vc_working_copy.path, "TOOL Add version #{schema_version} SQL for #{activity.app.name}, schema #{schema}")
+      asvc.vc.commit(asvc.vc_working_copy.path, "TOOL Add version #{schema_version} SQL for #{activity.app.name}, schema #{schema} #{::AppConfig.commit_message_append}")
       
       uploaded!
     rescue
@@ -207,7 +207,7 @@ class Version < ActiveRecord::Base
       end
   
       asvc.vc.delete files_to_delete
-      asvc.vc.commit(asvc.vc_working_copy.path, "TOOL Delete version #{schema_version} SQL for #{activity.app.name} schema #{schema}")
+      asvc.vc.commit(asvc.vc_working_copy.path, "TOOL Delete version #{schema_version} SQL for #{activity.app.name} schema #{schema} #{::AppConfig.commit_message_append}")
       
       uploaded! true
     rescue

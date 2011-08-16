@@ -24,7 +24,7 @@ class DeployController < ApplicationController
         format.html { render :action => "show_app" }
         format.xml
       rescue => exception
-        flash[:error] = "Error while getting database schemas #{exception} (#{exception.class})"
+        flash[:error] = "Error while getting database schemas! #{exception} (#{exception.class})"
         format.html { render :action => "index" }
         format.xml  { render :status => :unprocessable_entity }
       end
@@ -41,9 +41,9 @@ class DeployController < ApplicationController
         find_schemas
         
         find_selected_schema params[:schema]
+        
+        raise RuntimeError, "Schema #{params[:schema]} not found!" unless @schema
         find_db_instances @schema[:type]
-            
-        puts @db_instances.inspect
             
         format.html { render :action => "show_schema" }
         format.xml
@@ -61,19 +61,24 @@ class DeployController < ApplicationController
         @apps = App.all(:order => 'name ASC')
         @app = App.find(params[:app])
         
+        check_deploy_context params[:app], params[:schema], params[:db_instance]
+        
         set_app_schema_vc
         find_schemas
         
         find_selected_schema params[:schema]
+        
+        raise RuntimeError, "Schema #{params[:schema]} not found!" unless @schema
         find_db_instances @schema[:type]
         
         @db_instance = DbInstance.find(params[:db_instance])
         set_credentials
         fetch_version_info
-            
+        
         format.html { render :action => "show_instance" }
         format.xml
       rescue => exception
+        puts exception.backtrace  
         session.delete :db_credentials
         flash[:error] = "#{exception} (#{exception.class})"
         format.html { render :action => "show_instance", :status => :unprocessable_entity }
@@ -83,8 +88,8 @@ class DeployController < ApplicationController
   end
 
   def wipe_credentials
-    session.delete :db_credentials
-    
+    reset_credentials!
+       
     show_instance
   end
   
@@ -249,6 +254,24 @@ class DeployController < ApplicationController
     @db_instances.each do |db|
       @db_instances_grouped[db.db_env] << [db.db_alias, db.id]
     end
+  end
+  
+  def check_deploy_context app, schema, instance
+    same = true
+    
+    if session[:deploy_target] && session[:deploy_target][:app] && session[:deploy_target][:schema] && session[:deploy_target][:instance]
+      if session[:deploy_target][:app] != app || session[:deploy_target][:schema] != schema || session[:deploy_target][:instance] != instance
+        reset_credentials!  
+      end
+    end
+    
+    session[:deploy_target] = {:app => app, :schema => schema, :instance => instance }
+    
+    same
+  end
+  
+  def reset_credentials!
+    session.delete :db_credentials
   end
   
   def set_credentials

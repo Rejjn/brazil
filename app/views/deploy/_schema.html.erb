@@ -1,26 +1,27 @@
-<div id="app" class="box schema clearfix">
-  <h2>Schema</h2>
-
-  <div class="span-23 last">
-    <div class="head">
-      <h3><%=h @schema[:name] %></h3>
-    </div>
-  </div>
-
-  <div class="span-23 info last">  
-    <div class="span-5">
-      <span>Last changed ago</span>
+<% if @schema %>
+  <div id="app" class="box schema clearfix">
+    <h2>Schema</h2>
+  
+    <div class="span-23 last">
+      <div class="head">
+        <h3><%=h @schema[:name] %></h3>
+      </div>
     </div>
   
-    <div class="span-15 info last">
-      <span class="vc"><strong>Found in:</strong> <%=h @schema[:source] %> </span>
-      <span class="vc"><strong>Type:</strong> <%=h @schema[:type] %></span>
+    <div class="span-23 info last">  
+      <div class="span-5">
+        <span>Last changed ago</span>
+      </div>
+    
+      <div class="span-15 info last">
+        <span class="vc"><strong>Found in:</strong> <%=h @schema[:source] %> </span>
+        <span class="vc"><strong>Type:</strong> <%=h @schema[:type] %></span>
+      </div>
     </div>
   </div>
-</div>
-
-<div>
-  <strong>Select database instance:</strong>
-  <%= select_tag "db_instance", raw(grouped_options_for_select(@db_instances_grouped, params[:db_instance].to_i, '-- Select --')), :class => 'deploy_app' %>
-<div>
-
+  
+  <div>
+    <strong>Select database instance:</strong>
+    <%= select_tag "db_instance", raw(grouped_options_for_select(@db_instances_grouped, params[:db_instance].to_i, '-- Select --')), :class => 'deploy_app' %>
+  <div>
+<% end %>

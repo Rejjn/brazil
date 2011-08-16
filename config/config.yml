@@ -13,6 +13,7 @@ common:
  ad_host: ad.ongame.com
  ad_port: 389
  svn_bin: '/usr/bin/svn'
+ commit_message_append: 'CR-IGNORE CI-IGNORE'
 
 production:
 

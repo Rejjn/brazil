@@ -289,8 +289,6 @@ class ActivitiesController < ApplicationController
       @base_versions = @vscm.find_versions(@activity.schema)
     end
     
-    puts "#{@activity.base_version} != #{@base_versions.last.to_s}"
-    
     unless @activity.base_version == @base_versions.last.to_s
       flash[:warning] = "Note: the chosen base version is not the latest found in the version control repos!"
     end

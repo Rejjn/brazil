@@ -48,7 +48,6 @@
             <b>Current deployed version:</b> <%=h @version_info.last.to_s %>
           </p>
           <p>
-            <% puts @version_info.inspect %>
             <b>Version creation date:</b> <%=h Time.at(@version_info.last.created).strftime('%Y-%m-%d %H:%M') %>
           </p>
           <p>

@@ -1,2 +1,3 @@
-<%= render :partial => 'shared/db_instance', :locals => {:db_instance => @db_instance} %>
-
+<% if @db_instance %>
+  <%= render :partial => 'shared/db_instance', :locals => {:db_instance => @db_instance} %>
+<% end %>

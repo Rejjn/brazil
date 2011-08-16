@@ -1,7 +1,8 @@
-<%= render :partial => 'shared/app', :locals => {:app => @app } %>
+<% if @app %>
+  <%= render :partial => 'shared/app', :locals => {:app => @app } %>
 
-<div>
-  <strong>Select schema:</strong>
-  <%= select_tag "schema", raw('<option>-- Select --</option>' + options_for_select(@schemas, params[:schema])), :class => 'deploy_app' %>
-<div>
-
+  <div>
+    <strong>Select schema:</strong>
+    <%= select_tag "schema", raw('<option>-- Select --</option>' + options_for_select(@schemas, params[:schema])), :class => 'deploy_app' %>
+  <div>
+<% end %>
