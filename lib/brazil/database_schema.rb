@@ -74,8 +74,8 @@ module Brazil
         db_connection = create_db_connection unless db_connection
         db_connection['AutoCommit'] = false
         db_connection.transaction do |dbh|
-          sql_no_comments = sql.gsub(/\-\-\s.*?[\n\r]/, '')
-           sql_no_comments.strip.split(/;(?:[\n\r])?/s).each do |sql_part|
+          sql.strip.split(/;(?:\s*[$\n\r])/s).each do |sql_part|
+            sql_part.gsub!(/;\s*$/s, '');
             dbh.do(sql_part.strip)
           end
         end
@@ -318,12 +318,13 @@ module Brazil
 
           sql.each do |line|
             #find all occurrences of schema name
-            line.gsub!(/\s+#{schema_regexp}\.(#{schema_regexp})/, " #{schema_name}.\\1")
-            line.gsub!(/VALUES\s*\(\s*#{schema_regexp}\.(#{schema_regexp})/, "VALUES(#{schema_name}.\\1")
+            line.gsub!(/(table|column|join|from|REFERENCES|SEQUENCE|view|into|INDEX|ON)\s+#{schema_regexp}\.(#{schema_regexp})/i, "\\1 #{schema_name}.\\2")
+            line.gsub!(/VALUES\s*\(\s*#{schema_regexp}\.(#{schema_regexp})/i, "VALUES(#{schema_name}.\\1")
             line.gsub!(/(TableSpace)\s+("?)(#{schema_regexp})_(DATA|INDEX|IDX)("?)/i, "\\1 \\2#{schema_name}_\\4\\5")
             
             #find all occurrences of user name
             line.gsub!(/grant ([\w ,]+) on #{schema_regexp}.(\w+) to [\w\d\_\-]+;/i, "grant \\1 on #{schema_name}.\\2 to #{schema_name}_APP;")
+            line.gsub!(/revoke ([\w ,]+) on #{schema_regexp}.(\w+) from [\w\d\_\-]+;/i, "grant \\1 on #{schema_name}.\\2 to #{schema_name}_APP;")
             
             #find all occurrences of user role
             line.gsub!(/(To|From)\s+#{schema_regexp}_role([\n\s,;])/i, "\\1 #{schema_name}_ROLE\\2")
