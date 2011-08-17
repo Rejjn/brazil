@@ -319,6 +319,7 @@ module Brazil
       case db_type
         when TYPE_ORACLE then
           schema_regexp = /[\'"]?[\w\d\_\-]+[\'"]?/
+          schema_regexp2 = /[\w\d\_\-]+/
 
           sql.each do |line|
             # clean away comments, not allowed on last line by OCI8
@@ -326,7 +327,7 @@ module Brazil
             
             #find all occurrences of schema name
             line.gsub!(/(table|column|join|from|REFERENCES|REFERENCING|SEQUENCE|view|into|INDEX|ON|UPDATE)[\s\n\r\t]+#{schema_regexp}\.(#{schema_regexp})/i, "\\1 #{schema_name}.\\2")
-            #line.gsub!(/VALUES\s*\(\s*#{schema_regexp}\.(#{schema_regexp})/i, "VALUES(#{schema_name}.\\1")
+            line.gsub!(/VALUES\s*\(\s*#{schema_regexp2}\.(\w+)/i, "VALUES(#{schema_name}.\\1")
             line.gsub!(/(TableSpace)\s+("?)(#{schema_regexp})_(DATA|INDEX|IDX)("?)/i, "\\1 \\2#{schema_name}_\\4\\5")
             
             #find all occurrences of user name
