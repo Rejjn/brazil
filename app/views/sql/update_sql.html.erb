@@ -14,4 +14,4 @@ description varchar(255),
 PRIMARY KEY (major, minor, patch)
 ) /*! ENGINE = innodb DEFAULT CHARSET = utf8 */;
 <% end %>
-INSERT INTO <%=raw version.schema %>.schema_versions(major, minor, patch, created, description) VALUES(<%= sql_escape(version.schema_revision.major) %>, <%=raw sql_escape(version.schema_revision.minor) %>, <%=raw sql_escape(version.schema_revision.patch) %>, <%= Time.now.to_i %>, <%=raw sql_escape(version.activity.description) %>);
+INSERT INTO <%=raw version.schema %>.schema_versions(major, minor, patch, created, description) VALUES(<%= sql_escape(version.schema_revision.major) %>, <%=raw sql_escape(version.schema_revision.minor) %>, <%=raw sql_escape(version.schema_revision.patch) %>, <%= Time.now.to_i %>, <%=raw sql_escape(version.schema + " " + version.activity.description) %>);

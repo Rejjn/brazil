@@ -48,7 +48,7 @@ module Brazil
       sql_results = []
       sql_failed = false
       sql_scripts.each do |sql_script|
-        result = { :sql_script => sql_script, :msg => "Successfully executed", :success => true, :run => false }
+        result = { :sql_script => sql_script, :msg => "Successfully executed", :success => true, :run => false, :failing_at => ''}
         begin
           unless sql_failed
             sql = prepare_sql(@db_type, sql_script[:sql], @db_schema, @db_schema, @db_schema)
@@ -56,9 +56,10 @@ module Brazil
             execute_sql(sql)
             result[:run] = true
           end
-        rescue
-          result[:msg] = "#{$!.to_s} (#{$!})"
+        rescue => exception
+          result[:msg] = "#{exception.to_s} (#{exception})"
           result[:success] = false
+          result[:failing_at] = exception.data
           
           sql_failed = true
         end
@@ -71,17 +72,20 @@ module Brazil
     
     def execute_sql(sql, db_connection = nil)
       begin
+        current_sql = ''
         db_connection = create_db_connection unless db_connection
         db_connection['AutoCommit'] = false
         db_connection.transaction do |dbh|
           sql.strip.split(/;(?:\s*[$\n\r])/s).each do |sql_part|
             sql_part.gsub!(/;\s*$/s, '');
-            dbh.do(sql_part.strip)
+            sql_part.gsub!(/^\n+/s, '');
+            current_sql = sql_part.lstrip
+            dbh.do(current_sql)
           end
         end
       rescue DBI::DatabaseError => exception
         new_exception = Brazil::DBExecuteSQLException.new exception.errstr
-        new_exception.data = sql
+        new_exception.data = current_sql
         raise new_exception 
       ensure
         if db_connection
@@ -314,12 +318,15 @@ module Brazil
       
       case db_type
         when TYPE_ORACLE then
-          schema_regexp = '[\w\d\_\-]+'
+          schema_regexp = /[\'"]?[\w\d\_\-]+[\'"]?/
 
           sql.each do |line|
+            # clean away comments, not allowed on last line by OCI8
+            line.gsub!(/--.*?(\n|$)/, '')
+            
             #find all occurrences of schema name
-            line.gsub!(/(table|column|join|from|REFERENCES|SEQUENCE|view|into|INDEX|ON)\s+#{schema_regexp}\.(#{schema_regexp})/i, "\\1 #{schema_name}.\\2")
-            line.gsub!(/VALUES\s*\(\s*#{schema_regexp}\.(#{schema_regexp})/i, "VALUES(#{schema_name}.\\1")
+            line.gsub!(/(table|column|join|from|REFERENCES|REFERENCING|SEQUENCE|view|into|INDEX|ON|UPDATE)[\s\n\r\t]+#{schema_regexp}\.(#{schema_regexp})/i, "\\1 #{schema_name}.\\2")
+            #line.gsub!(/VALUES\s*\(\s*#{schema_regexp}\.(#{schema_regexp})/i, "VALUES(#{schema_name}.\\1")
             line.gsub!(/(TableSpace)\s+("?)(#{schema_regexp})_(DATA|INDEX|IDX)("?)/i, "\\1 \\2#{schema_name}_\\4\\5")
             
             #find all occurrences of user name
@@ -328,14 +335,13 @@ module Brazil
             
             #find all occurrences of user role
             line.gsub!(/(To|From)\s+#{schema_regexp}_role([\n\s,;])/i, "\\1 #{schema_name}_ROLE\\2")
-            
-            # clean away comments, not allowed on last line by ODBC
-            line.gsub!(/--.*?(\n|$)/, '')
           end
         when TYPE_MYSQL then
           schema_regexp = '[`\w\d\_\-]+'
           
           sql.each do |line|
+            line.gsub!(/--.*?(\n|$)/, '')
+            
             line.gsub!(/CREATE DATABASE \w+;[\s\n\r]+/, "")
             line.gsub!(/USE \w+;[\s\n\r]+/, "")
             #line.gsub!(/\/\*\!.+;[\s\n\r]+/, "")

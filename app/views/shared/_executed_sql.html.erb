@@ -6,7 +6,7 @@
   <div class="span-24 last">
     <% if deployment_results.count > 0%>
       <div class="box" id="executed_sql_box">
-        <h3>SQL deployment results</h3>
+        <h3>SQL deployment results 222</h3>
         <br>
         <% deployment_results.each do |sql_result| %>
           <div class="executed_sql_box">
@@ -20,7 +20,10 @@
               <h4 class="error">Failed to execute <%=h sql_result[:sql_script][:source] %></h4>
             <% end %>
             <% unless sql_result[:success] %>
-              <div class="box error"><%= sql_result[:msg] %></div>
+              <div class="box error">
+                  <%= sql_result[:msg] %><br/>
+                  failing at '<%= sql_result[:failing_at] %>'
+              </div>
               <% end %>
             <div class="executed_sql">
               <pre class=" brush: sql"><%=h sql_result[:sql_script][:sql] %></pre>
