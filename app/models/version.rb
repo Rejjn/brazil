@@ -66,8 +66,11 @@ class Version < ActiveRecord::Base
       asvc = Brazil::AppSchemaVersionControl.new(:vc_type => Brazil::AppSchemaVersionControl::TYPE_SUBVERSION, :vc_path => activity.app.vc_path, :vc_uri => ::AppConfig.vc_uri, :vc_tmp_dir => ::AppConfig.vc_dir)
       asvc.valid_next_version? activity.schema, next_schema_version
     rescue => exception
-      unless exception.to_s =~ /reason_phrase=\"Not Found\"/ 
+      if exception.to_s =~ /reason_phrase=\"Not Found\"/ 
         errors.add(:base, "Could not lookup version for schema '#{schema}' (#{exception})")
+        return
+      else
+        errors.add(:base, exception.to_s)
         return
       end
     end
