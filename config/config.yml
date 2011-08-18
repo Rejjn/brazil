@@ -3,7 +3,7 @@ common:
  release_name: 'Brave New World'
  vc_type: 'svn'
  vc_uri: 'http://prsvn.ongame.com/svn/repos'
- vc_dir: '/home/rinman/workspace/brazil-git/brazil/tmp/svn_tmp'
+ vc_dir: '/opt/brazil/current/tmp/svn_tmp'
  vc_read_user: ''
  vc_read_password: ''
  serenity_url: http://serenity.vte.b2c
