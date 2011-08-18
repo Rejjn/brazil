@@ -1,5 +1,5 @@
 common:
- release_version: 2.0
+ release_version: 2.0.1
  release_name: 'Brave New World'
  vc_type: 'svn'
  vc_uri: 'http://prsvn.ongame.com/svn/repos'
