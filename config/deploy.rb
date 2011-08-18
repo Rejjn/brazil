@@ -28,15 +28,12 @@ role :db, "192.168.18.127", :primary => true
 after 'deploy:symlink' do 
   run "#{try_sudo} cp #{File.join(deploy_to,'rvm','.rvmrc')} #{File.join(release_path)}"
   run "#{try_sudo} rvm rvmrc trust #{File.join(release_path)}"
+  
+  run "#{try_sudo} chmod -R 777 #{File.join(current_path, 'tmp')}"
 end
 
 # If you are using Passenger mod_rails uncomment this:
 namespace :deploy do
-  desc "Copy the .rvmrc file and set trust flag"
-  task :setup_rvm do
-    puts "MAMMA: " + release_path
-  end
-  
   task :start do ; end
   task :stop do ; end
   
